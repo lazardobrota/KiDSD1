@@ -20,7 +20,10 @@ public class ScanCommand extends Command {
         int readThreadsCount = 1;
         ExecutorService readFiles = Executors.newFixedThreadPool(readThreadsCount); //TODO What happens when you shutdown executorService and after you call Scan again
 
-        for (int i = 0; i < args.length - 1; i += 2) {
+        for (int i = 0; i < args.length; i += 2) {
+            if (i + 1 >= args.length)
+                throw new Exception("No value for argument '%s' for command '%s'".formatted(args[i], command));
+
             Argument argument = getArguments().get(args[i]);
             if (argument == null)
                 throw new Exception("Invalid argument '%s' for command '%s'".formatted(args[i], getCommand()));
@@ -30,9 +33,9 @@ public class ScanCommand extends Command {
         }
 
         if (!argumentAndValue.containsKey(Argument.SCAN_OUTPUT))
-            throw new Exception("Missing value or '%s' / '%s' argument".formatted(Argument.SCAN_OUTPUT.getLongArgument(), Argument.SCAN_OUTPUT.getShortArgument()));
+            throw new Exception("Missing '%s' ('%s') argument".formatted(Argument.SCAN_OUTPUT.getLongArgument(), Argument.SCAN_OUTPUT.getShortArgument()));
         if (!argumentAndValue.containsKey(Argument.SCAN_JOB))
-            throw new Exception("Missing value or '%s' / '%s' argument".formatted(Argument.SCAN_JOB.getLongArgument(), Argument.SCAN_JOB.getShortArgument()));
+            throw new Exception("Missing '%s' ('%s') argument".formatted(Argument.SCAN_JOB.getLongArgument(), Argument.SCAN_JOB.getShortArgument()));
 
 
         String folderPath = "files";

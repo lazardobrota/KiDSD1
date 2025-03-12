@@ -1,4 +1,5 @@
 import commands.Command;
+import commands.ECommand;
 import commands.ScanCommand;
 
 import java.util.*;

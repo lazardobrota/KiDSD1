@@ -2,6 +2,7 @@ package threads;
 
 import commands.Argument;
 import commands.ArgumentSet;
+import commands.ECommand;
 
 import java.io.*;
 import java.util.Map;
@@ -28,8 +29,9 @@ public class ScanWorker implements Callable<String> {
         double max    = (double) Argument.SCAN_MAX.parseOrDefault(argumentAndValue.get(Argument.SCAN_MAX), -1.0);
         double min    = (double) Argument.SCAN_MIN.parseOrDefault(argumentAndValue.get(Argument.SCAN_MIN), -1.0);
         String letter = (String) Argument.SCAN_LETTER.parseOrDefault(argumentAndValue.get(Argument.SCAN_LETTER), "");
+        String outputFileName = (String) Argument.SCAN_OUTPUT.parseOrThrow(argumentAndValue.get(Argument.SCAN_OUTPUT), ECommand.SCAN.getValue());
 
-        File outputFile = new File(argumentAndValue.get(Argument.SCAN_OUTPUT));
+        File outputFile = new File(outputFileName);
 
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath));
              FileWriter outputFileWriter = new FileWriter(outputFile, true)) {

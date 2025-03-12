@@ -1,3 +1,5 @@
+package commands;
+
 public enum ECommand {
     SCAN("scan"),
     STATUS("status"),

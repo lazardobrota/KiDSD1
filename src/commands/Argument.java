@@ -6,7 +6,7 @@ public enum Argument {
     SCAN_MIN         ("--min",       "-m", Double::parseDouble),
     SCAN_MAX         ("--max",       "-M", Double::parseDouble),
     SCAN_LETTER      ("--letter",    "-l", s -> s),
-    SCAN_OUTPUT      ("--output",    "-o", s -> s),
+    SCAN_OUTPUT      ("--output",    "-o", s -> s.endsWith(".txt") || s.endsWith(".csv") ? s : s + ".txt"),
     SCAN_JOB         ("--job",       "-j", s -> s),
     STATUS_JOB       ("--job",       "-j", s -> s),
     SHUTDOWN_SAVE_JOB("--save-job",  "-s", s -> s),
@@ -24,6 +24,9 @@ public enum Argument {
 
     public Object parseOrThrow(String value, String command) throws Exception {
         try {
+            if (value == null || value.startsWith("--"))
+                throw new Exception();
+
             return parser.apply(value);
         } catch (Exception e) {
             throw new Exception("Invalid value '%s' for argument '%s' for command '%s'".formatted(value, longArgument, command));
