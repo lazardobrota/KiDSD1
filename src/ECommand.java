@@ -1,4 +1,4 @@
-public enum Keyword {
+public enum ECommand {
     SCAN("scan"),
     STATUS("status"),
     MAP("map"),
@@ -8,7 +8,7 @@ public enum Keyword {
 
     private final String value;
 
-    Keyword(String value) {
+    ECommand(String value) {
         this.value = value;
     }
 
@@ -16,8 +16,8 @@ public enum Keyword {
         return value;
     }
 
-    public static Keyword convertOrThrow(String givenCommand) throws Exception {
-        for (Keyword k : Keyword.values()) {
+    public static ECommand convertOrThrow(String givenCommand) throws Exception {
+        for (ECommand k : ECommand.values()) {
             if (k.value.equals(givenCommand.toLowerCase()))
                 return k;
         }
