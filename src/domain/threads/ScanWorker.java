@@ -1,8 +1,8 @@
-package threads;
+package domain.threads;
 
-import commands.Argument;
-import commands.ArgumentSet;
-import commands.ECommand;
+import domain.arguments.Argument;
+import domain.arguments.ArgumentSet;
+import domain.commands.ECommand;
 
 import java.io.*;
 import java.util.Map;
@@ -26,9 +26,9 @@ public class ScanWorker implements Callable<String> {
 
     @Override
     public String call() throws Exception {
-        double max    = (double) Argument.SCAN_MAX.parseOrDefault(argumentAndValue.get(Argument.SCAN_MAX), -1.0);
-        double min    = (double) Argument.SCAN_MIN.parseOrDefault(argumentAndValue.get(Argument.SCAN_MIN), -1.0);
-        String letter = (String) Argument.SCAN_LETTER.parseOrDefault(argumentAndValue.get(Argument.SCAN_LETTER), "");
+        double max            = (double) Argument.SCAN_MAX.parseOrDefault(argumentAndValue.get(Argument.SCAN_MAX), -1.0);
+        double min            = (double) Argument.SCAN_MIN.parseOrDefault(argumentAndValue.get(Argument.SCAN_MIN), -1.0);
+        String letter         = (String) Argument.SCAN_LETTER.parseOrDefault(argumentAndValue.get(Argument.SCAN_LETTER), "");
         String outputFileName = (String) Argument.SCAN_OUTPUT.parseOrThrow(argumentAndValue.get(Argument.SCAN_OUTPUT), ECommand.SCAN.getValue());
 
         File outputFile = new File(outputFileName);
@@ -50,9 +50,6 @@ public class ScanWorker implements Callable<String> {
                 } catch (Exception e) {
                     continue;
                 }
-
-//                if (argumentAndValue.containsKey(Argument.SCAN_MAX) && temp > (double)Argument.SCAN_MAX.getParser().apply(argumentAndValue.get(Argument.SCAN_MAX)))
-//                    continue;
 
                 if (max > 0 && temp > max)
                     continue;

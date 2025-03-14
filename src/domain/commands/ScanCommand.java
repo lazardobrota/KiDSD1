@@ -1,9 +1,13 @@
-package commands;
+package domain.commands;
 
-import threads.ScanWorker;
+import domain.arguments.Argument;
+import domain.arguments.ArgumentSet;
+import domain.threads.ScanWorker;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -11,15 +15,12 @@ import java.util.concurrent.TimeUnit;
 public class ScanCommand extends Command {
 
     public ScanCommand() {
-        super("scan", new ArgumentSet(Argument.SCAN_MAX, Argument.SCAN_MIN, Argument.SCAN_JOB, Argument.SCAN_LETTER, Argument.SCAN_OUTPUT));
+        super(ECommand.SCAN.getValue(), new ArgumentSet(Argument.SCAN_MAX, Argument.SCAN_MIN, Argument.SCAN_JOB, Argument.SCAN_LETTER, Argument.SCAN_OUTPUT));
     }
 
     @Override
-    public void execution(String[] args) throws Exception {
+    public void parse(String[] args) throws Exception {
         Map<Argument, String> argumentAndValue = new HashMap<>();
-        int readThreadsCount = 1;
-        ExecutorService readFiles = Executors.newFixedThreadPool(readThreadsCount); //TODO What happens when you shutdown executorService and after you call Scan again
-
         for (int i = 0; i < args.length; i += 2) {
             if (i + 1 >= args.length)
                 throw new Exception("No value for argument '%s' for command '%s'".formatted(args[i], command));
@@ -37,6 +38,16 @@ public class ScanCommand extends Command {
         if (!argumentAndValue.containsKey(Argument.SCAN_JOB))
             throw new Exception("Missing '%s' ('%s') argument".formatted(Argument.SCAN_JOB.getLongArgument(), Argument.SCAN_JOB.getShortArgument()));
 
+        execution(argumentAndValue);
+    }
+
+    @Override
+    public void execution() throws Exception {
+        throw new Exception("Command '%s' takes arguments".formatted(command));
+    }
+
+    @Override
+    public void execution(Map<Argument, String> argumentAndValue) throws Exception {
 
         String folderPath = "files";
 //        String filePath = "files/measurements_small.txt";
@@ -49,6 +60,8 @@ public class ScanCommand extends Command {
             return;
         }
 
+        int readThreadsCount = 4;
+        ExecutorService readFiles = Executors.newFixedThreadPool(readThreadsCount); //TODO What happens when you shutdown executorService and after you call Scan again
         long start = System.currentTimeMillis();
 
         File outputFile = new File(argumentAndValue.get(Argument.SCAN_OUTPUT));

@@ -1,6 +1,9 @@
-package commands;
+package domain.commands;
 
-import java.util.Set;
+import domain.arguments.Argument;
+import domain.arguments.ArgumentSet;
+
+import java.util.Map;
 
 public abstract class Command {
 
@@ -12,7 +15,9 @@ public abstract class Command {
         this.arguments = arguments;
     }
 
-    public abstract void execution(String[] args) throws Exception;
+    public abstract void parse(String[] args) throws Exception;
+    public abstract void execution() throws Exception;
+    public abstract void execution(Map<Argument, String> argumentAndValue) throws Exception;
 
     public String getCommand() {
         return command;

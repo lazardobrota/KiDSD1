@@ -1,4 +1,4 @@
-package commands;
+package domain.arguments;
 
 import java.util.HashMap;
 import java.util.Map;

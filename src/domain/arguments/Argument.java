@@ -1,4 +1,4 @@
-package commands;
+package domain.arguments;
 
 import java.util.function.Function;
 
