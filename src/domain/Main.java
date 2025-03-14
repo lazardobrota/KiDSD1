@@ -1,10 +1,7 @@
 package domain;
 
 import domain.arguments.TemperatureInfo;
-import domain.commands.Command;
-import domain.commands.ECommand;
-import domain.commands.MapCommand;
-import domain.commands.ScanCommand;
+import domain.commands.*;
 import domain.threads.FileChangesWorker;
 import domain.threads.FileModifyWorker;
 import domain.threads.InMemoryWorker;
@@ -28,7 +25,8 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         Map<String, Command> commandMap = Map.ofEntries(
                 Map.entry(ECommand.SCAN.getValue(), new ScanCommand()),
-                Map.entry(ECommand.MAP.getValue(), new MapCommand())
+                Map.entry(ECommand.MAP.getValue(), new MapCommand()),
+                Map.entry(ECommand.EXPORT_MAP.getValue(), new ExportMapCommand())
         );
 
         Thread fileModifyWorker = new Thread(new FileModifyWorker());

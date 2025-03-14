@@ -24,7 +24,7 @@ public class MapCommand extends Command{
     @Override
     public void parse(String[] args) throws Exception {
         if (args.length > 0)
-            throw new Exception("Command '%s' takes no domain.arguments".formatted(command));
+            throw new Exception("Command '%s' takes no domain arguments".formatted(command));
 
         execution();
     }
