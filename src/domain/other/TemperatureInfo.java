@@ -1,4 +1,4 @@
-package domain.arguments;
+package domain.other;
 
 public class TemperatureInfo {
 

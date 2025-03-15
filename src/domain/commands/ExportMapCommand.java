@@ -1,9 +1,8 @@
 package domain.commands;
 
 import domain.Main;
-import domain.arguments.Argument;
 import domain.arguments.ArgumentSet;
-import domain.arguments.TemperatureInfo;
+import domain.other.TemperatureInfo;
 import domain.utils.FileUtils;
 
 import java.io.File;

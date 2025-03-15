@@ -1,9 +1,10 @@
 package domain;
 
-import domain.arguments.TemperatureInfo;
+import domain.other.Job;
+import domain.other.TemperatureInfo;
 import domain.commands.*;
 import domain.threads.FileModifyWorker;
-import domain.threads.ReadJobWorker;
+import domain.threads.ReadCommandWorker;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Main {
 
     public static Map<Character, TemperatureInfo> inMemoryMap = new ConcurrentHashMap<>();
+    public static Map<String, Job> jobsMap = new ConcurrentHashMap<>();
     public static BlockingQueue<Command> queue = new LinkedBlockingQueue<>();
 
     public static void main(String[] args) {
@@ -22,11 +24,12 @@ public class Main {
         Map<String, Command> commandMap = Map.ofEntries(
                 Map.entry(ECommand.SCAN.getValue(), new ScanCommand()),
                 Map.entry(ECommand.MAP.getValue(), new MapCommand()),
-                Map.entry(ECommand.EXPORT_MAP.getValue(), new ExportMapCommand())
+                Map.entry(ECommand.EXPORT_MAP.getValue(), new ExportMapCommand()),
+                Map.entry(ECommand.STATUS.getValue(), new StatusCommand())
         );
 
         Thread fileModifyWorker = new Thread(new FileModifyWorker());
-        Thread readJobWorker = new Thread(new ReadJobWorker());
+        Thread readJobWorker = new Thread(new ReadCommandWorker());
         fileModifyWorker.start();
         readJobWorker.start();
 

@@ -3,7 +3,7 @@ package domain.threads;
 import domain.Main;
 import domain.commands.Command;
 
-public class ReadJobWorker implements Runnable {
+public class ReadCommandWorker implements Runnable {
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {

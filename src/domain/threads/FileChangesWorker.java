@@ -1,7 +1,7 @@
 package domain.threads;
 
 import domain.Main;
-import domain.arguments.TemperatureInfo;
+import domain.other.TemperatureInfo;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
