@@ -3,6 +3,7 @@ package domain.commands;
 import domain.arguments.Argument;
 import domain.arguments.ArgumentSet;
 import domain.threads.ScanWorker;
+import domain.utils.FileUtils;
 
 import java.io.File;
 import java.util.HashMap;
@@ -14,12 +15,20 @@ import java.util.concurrent.TimeUnit;
 
 public class ScanCommand extends Command {
 
+    private final Map<Argument, String> argumentAndValue;
+
     public ScanCommand() {
         super(ECommand.SCAN.getValue(), new ArgumentSet(Argument.SCAN_MAX, Argument.SCAN_MIN, Argument.SCAN_JOB, Argument.SCAN_LETTER, Argument.SCAN_OUTPUT));
+        argumentAndValue = null;
+    }
+
+    public ScanCommand(Map<Argument, String> argumentAndValue) {
+        super(ECommand.SCAN.getValue(), new ArgumentSet(Argument.SCAN_MAX, Argument.SCAN_MIN, Argument.SCAN_JOB, Argument.SCAN_LETTER, Argument.SCAN_OUTPUT));
+        this.argumentAndValue = argumentAndValue;
     }
 
     @Override
-    public void parse(String[] args) throws Exception {
+    public Command parse(String[] args) throws Exception {
         Map<Argument, String> argumentAndValue = new HashMap<>();
         for (int i = 0; i < args.length; i += 2) {
             if (i + 1 >= args.length)
@@ -38,16 +47,14 @@ public class ScanCommand extends Command {
         if (!argumentAndValue.containsKey(Argument.SCAN_JOB))
             throw new Exception("Missing '%s' ('%s') argument".formatted(Argument.SCAN_JOB.getLongArgument(), Argument.SCAN_JOB.getShortArgument()));
 
-        execution(argumentAndValue);
+        return new ScanCommand(argumentAndValue);
     }
 
     @Override
-    public void execution() throws Exception {
-        throw new Exception("Command '%s' takes arguments".formatted(command));
-    }
+    public void execution() throws Exception { //This should maybe be runnable
 
-    @Override
-    public void execution(Map<Argument, String> argumentAndValue) throws Exception {
+        if (argumentAndValue == null)
+            throw new Exception("ArgumentAndValue can't be null");
 
         String folderPath = "files";
 //        String filePath = "files/measurements_small.txt";
@@ -64,8 +71,9 @@ public class ScanCommand extends Command {
         ExecutorService readFiles = Executors.newFixedThreadPool(readThreadsCount); //TODO What happens when you shutdown executorService and after you call Scan again
         long start = System.currentTimeMillis();
 
-        File outputFile = new File(argumentAndValue.get(Argument.SCAN_OUTPUT));
+        File outputFile = new File(FileUtils.defaultOutputFolder + "/" + argumentAndValue.get(Argument.SCAN_OUTPUT));
         outputFile.delete();
+        outputFile.createNewFile();
 
         for (final File fileEntry : Objects.requireNonNull(folder.listFiles()))
             readFiles.submit(new ScanWorker(argumentAndValue, getArguments(), fileEntry.getPath(),  fileEntry.length()));

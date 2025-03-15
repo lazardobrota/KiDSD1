@@ -4,17 +4,9 @@ import domain.Main;
 import domain.arguments.Argument;
 import domain.arguments.ArgumentSet;
 import domain.arguments.TemperatureInfo;
-import domain.threads.FileChangesWorker;
-import domain.utils.FileUtils;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class MapCommand extends Command{
     public MapCommand() {
@@ -22,11 +14,11 @@ public class MapCommand extends Command{
     }
 
     @Override
-    public void parse(String[] args) throws Exception {
+    public Command parse(String[] args) throws Exception {
         if (args.length > 0)
             throw new Exception("Command '%s' takes no domain arguments".formatted(command));
 
-        execution();
+        return new MapCommand();
     }
 
     @Override
@@ -49,10 +41,5 @@ public class MapCommand extends Command{
 
             System.out.print(stringBuilder);
         }
-    }
-
-    @Override
-    public void execution(Map<Argument, String> argumentAndValue) throws Exception {
-        execution();
     }
 }

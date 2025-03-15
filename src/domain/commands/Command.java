@@ -15,9 +15,10 @@ public abstract class Command {
         this.arguments = arguments;
     }
 
-    public abstract void parse(String[] args) throws Exception;
+    public abstract Command parse(String[] args) throws Exception;
+
     public abstract void execution() throws Exception;
-    public abstract void execution(Map<Argument, String> argumentAndValue) throws Exception;
+
 
     public String getCommand() {
         return command;

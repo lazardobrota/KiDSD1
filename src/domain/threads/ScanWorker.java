@@ -3,6 +3,7 @@ package domain.threads;
 import domain.arguments.Argument;
 import domain.arguments.ArgumentSet;
 import domain.commands.ECommand;
+import domain.utils.FileUtils;
 
 import java.io.*;
 import java.util.Map;
@@ -31,7 +32,7 @@ public class ScanWorker implements Callable<String> {
         String letter         = (String) Argument.SCAN_LETTER.parseOrDefault(argumentAndValue.get(Argument.SCAN_LETTER), "");
         String outputFileName = (String) Argument.SCAN_OUTPUT.parseOrThrow(argumentAndValue.get(Argument.SCAN_OUTPUT), ECommand.SCAN.getValue());
 
-        File outputFile = new File(outputFileName);
+        File outputFile = new File(FileUtils.defaultOutputFolder + "/" + outputFileName);
 
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath));
              FileWriter outputFileWriter = new FileWriter(outputFile, true)) {

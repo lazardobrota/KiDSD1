@@ -17,11 +17,11 @@ public class ExportMapCommand extends Command {
     }
 
     @Override
-    public void parse(String[] args) throws Exception {
+    public Command parse(String[] args) throws Exception {
         if (args.length > 0)
             throw new Exception("Command '%s' takes no domain arguments".formatted(command));
 
-        execution();
+        return new ExportMapCommand();
     }
 
     @Override
@@ -41,10 +41,5 @@ public class ExportMapCommand extends Command {
             throw new Exception("Invalid ExportMap output file");
         }
 
-    }
-
-    @Override
-    public void execution(Map<Argument, String> argumentAndValue) throws Exception {
-        execution();
     }
 }
