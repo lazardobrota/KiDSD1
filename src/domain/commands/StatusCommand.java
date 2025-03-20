@@ -5,7 +5,6 @@ import domain.arguments.Argument;
 import domain.arguments.ArgumentSet;
 import domain.utils.CommandUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class StatusCommand extends Command {
@@ -40,9 +39,18 @@ public class StatusCommand extends Command {
 
         String jobName = argumentAndValue.get(Argument.STATUS_JOB);
 
-        if (!Main.jobsMap.containsKey(jobName))
-            throw new Exception("No Job with name '%s' ".formatted(jobName));
+        if (!Main.jobsMap.containsKey(jobName)) {
+            System.out.println(("No Job with name '%s' ".formatted(jobName)));
+            return;
+        }
+
 
         System.out.println(jobName + " is " + Main.jobsMap.get(jobName).getJobStatus().toString().toLowerCase());
+    }
+
+    @Override
+    public Void call() throws Exception {
+        execution();
+        return null;
     }
 }

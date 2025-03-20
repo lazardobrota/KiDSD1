@@ -30,15 +30,20 @@ public class ExportMapCommand extends Command {
         file.delete();
         file.createNewFile();
 
-        try(FileWriter fileWriter = new FileWriter(FileUtils.defaultExportMapOutputFile)) {
+        try (FileWriter fileWriter = new FileWriter(FileUtils.defaultExportMapOutputFile)) {
             fileWriter.write("Letter, Station count, Sum\n");
             for (TemperatureInfo item : inMemoryMapCopy.values()) {
                 fileWriter.write(item.toString().replaceAll(" - ", ", ").replaceAll(" : ", ", ") + "\n");
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new Exception("Invalid ExportMap output file");
         }
 
+    }
+
+    @Override
+    public Void call() throws Exception {
+        execution();
+        return null;
     }
 }

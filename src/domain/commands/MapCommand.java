@@ -7,7 +7,7 @@ import domain.other.TemperatureInfo;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapCommand extends Command{
+public class MapCommand extends Command {
     public MapCommand() {
         super(ECommand.MAP.getValue(), new ArgumentSet());
     }
@@ -24,6 +24,11 @@ public class MapCommand extends Command{
     public void execution() throws Exception { //todo for some reason it wont show until FileChangesWorker is finished
         Map<Character, TemperatureInfo> inMemoryMapCopy = new HashMap<>(Main.inMemoryMap);
 
+        if (inMemoryMapCopy.isEmpty()) { //todo probably not this but actually until FileChangesWorker changes
+            System.out.println("In Memory map is empty");
+            return;
+        }
+
         int i = 0;
         int columns = 2;
         for (TemperatureInfo item : inMemoryMapCopy.values()) {
@@ -34,11 +39,17 @@ public class MapCommand extends Command{
             if (i >= columns) {
                 stringBuilder.append("\n");
                 i %= columns;
-            }
-            else
+            } else
                 stringBuilder.append(" | ");
 
             System.out.print(stringBuilder);
         }
+        System.out.println();
+    }
+
+    @Override
+    public Void call() throws Exception {
+        execution();
+        return null;
     }
 }

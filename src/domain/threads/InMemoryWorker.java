@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class InMemoryWorker implements Runnable{
+public class InMemoryWorker implements Runnable {
     @Override
     public void run() { //TODO what happeneds when this is working but file is changed,  there should be two InMemoryWorkers at the same time, first one should be canceled
         ExecutorService fillInMemoryMap = Executors.newFixedThreadPool(4);

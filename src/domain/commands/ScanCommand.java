@@ -9,15 +9,14 @@ import domain.threads.ScanWorker;
 import domain.utils.FileUtils;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class ScanCommand extends Command {
 
+    private static final ExecutorService readFiles = Executors.newFixedThreadPool(4);
     private final Map<Argument, String> argumentAndValue;
     private final Job job;
 
@@ -61,7 +60,7 @@ public class ScanCommand extends Command {
     }
 
     @Override
-    public void execution() throws Exception { //TODO This should maybe be runnable, if its not then STATUS cant get anything about job only COMPLETED
+    public void execution() throws Exception {
 
         if (argumentAndValue == null)
             throw new Exception("ArgumentAndValue can't be null");
@@ -69,9 +68,6 @@ public class ScanCommand extends Command {
             throw new Exception("Job can't be null");
 
         String folderPath = "files";
-//        String filePath = "files/measurements_small.txt";
-//        String filePath = "files/super_small.txt";
-//        String outputFilePath = "output.txt";
 
         File folder = new File(folderPath);
         if (folder.listFiles() == null) {
@@ -79,29 +75,28 @@ public class ScanCommand extends Command {
             return;
         }
 
-        int readThreadsCount = 4;
-        ExecutorService readFiles = Executors.newFixedThreadPool(readThreadsCount); //TODO What happens when you shutdown executorService and after you call Scan again
         long start = System.currentTimeMillis();
 
         File outputFile = new File(FileUtils.defaultOutputFolder + "/" + argumentAndValue.get(Argument.SCAN_OUTPUT));
         outputFile.delete();
         outputFile.createNewFile();
 
-        job.setJobStatus(EJob.RUNNING);
+        List<Callable<String>> tasks = new ArrayList<>();
         for (final File fileEntry : Objects.requireNonNull(folder.listFiles()))
-            readFiles.submit(new ScanWorker(argumentAndValue, getArguments(), fileEntry.getPath(), fileEntry.length()));
+            tasks.add(new ScanWorker(argumentAndValue, getArguments(), fileEntry.getPath(), fileEntry.length()));
 
-        readFiles.shutdown();
-
-        try {
-            readFiles.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        job.setJobStatus(EJob.RUNNING);
+        readFiles.invokeAll(tasks);
         job.setJobStatus(EJob.COMPLETED);
 
         long end = System.currentTimeMillis();
         System.out.println("Time: " + (end - start));
 
+    }
+
+    @Override
+    public Void call() throws Exception {
+        execution();
+        return null;
     }
 }

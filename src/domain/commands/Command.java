@@ -1,11 +1,10 @@
 package domain.commands;
 
-import domain.arguments.Argument;
 import domain.arguments.ArgumentSet;
 
-import java.util.Map;
+import java.util.concurrent.Callable;
 
-public abstract class Command {
+public abstract class Command implements Callable<Void> {
 
     protected String command;
     protected ArgumentSet arguments;
