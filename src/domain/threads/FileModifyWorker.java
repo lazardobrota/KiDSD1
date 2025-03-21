@@ -34,7 +34,9 @@ public class FileModifyWorker implements Runnable {
             }
 
             if (modified) {
+                ProgramUtils.inMemoryFilled.set(false);
                 handleFileChanges();
+                ProgramUtils.inMemoryFilled.set(true);
             }
         }
 

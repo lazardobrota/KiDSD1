@@ -4,6 +4,7 @@ import domain.Main;
 import domain.arguments.ArgumentSet;
 import domain.other.TemperatureInfo;
 import domain.utils.FileUtils;
+import domain.utils.ProgramUtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -25,6 +26,12 @@ public class ExportMapCommand extends Command {
 
     @Override
     public void execution() throws Exception {
+
+        if (!ProgramUtils.inMemoryFilled.get()) {
+            System.out.println("In Memory map is still not available");
+            return;
+        }
+
         Map<Character, TemperatureInfo> inMemoryMapCopy = new HashMap<>(Main.inMemoryMap);
         File file = new File(FileUtils.defaultExportMapOutputFile);
         file.delete();

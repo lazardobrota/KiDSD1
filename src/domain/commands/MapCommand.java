@@ -3,6 +3,7 @@ package domain.commands;
 import domain.Main;
 import domain.arguments.ArgumentSet;
 import domain.other.TemperatureInfo;
+import domain.utils.ProgramUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,8 +25,8 @@ public class MapCommand extends Command {
     public void execution() throws Exception { //todo for some reason it wont show until FileChangesWorker is finished
         Map<Character, TemperatureInfo> inMemoryMapCopy = new HashMap<>(Main.inMemoryMap);
 
-        if (inMemoryMapCopy.isEmpty()) { //todo probably not this but actually until FileChangesWorker changes
-            System.out.println("In Memory map is empty");
+        if (!ProgramUtils.inMemoryFilled.get()) {
+            System.out.println("In Memory map is still not available");
             return;
         }
 
