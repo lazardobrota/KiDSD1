@@ -38,6 +38,9 @@ public class ScanWorker implements Callable<String> {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath));
              FileWriter outputFileWriter = new FileWriter(outputFile, true)) {
 
+            if (filePath.endsWith(".csv"))
+                bufferedReader.readLine();
+
             String line;
             StringBuilder stringBuilder = new StringBuilder();
             while (ProgramUtils.running.get() && (line = bufferedReader.readLine()) != null) {
