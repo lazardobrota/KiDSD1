@@ -1,9 +1,14 @@
 package domain.other;
 
+import domain.commands.Command;
 import domain.utils.ProgramUtils;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Job {
 
+    private static final Map<Job, Command> runningJobs = new ConcurrentHashMap<>();
     private final String name;
     private final String wholeCommand;
     private EJob jobStatus;

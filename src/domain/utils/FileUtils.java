@@ -7,4 +7,5 @@ public class FileUtils {
     public static String defaultOutputFile = defaultOutputFolder + "/output.txt";
     public static String defaultShutdownOutputFile = defaultOutputFolder + "/sdo.txt";
     public static String defaultExportMapOutputFile = defaultOutputFolder + "/emo.csv";
+    public static String defaultLoadJobsFile = defaultOutputFolder + "/load_jobs.txt";
 }
