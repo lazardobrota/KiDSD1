@@ -82,8 +82,10 @@ public class ScanCommand extends Command {
         outputFile.createNewFile();
 
         List<Callable<String>> tasks = new ArrayList<>();
-        for (final File fileEntry : Objects.requireNonNull(folder.listFiles()))
-            tasks.add(new ScanWorker(argumentAndValue, getArguments(), fileEntry.getPath(), fileEntry.length()));
+        for (final File fileEntry : Objects.requireNonNull(folder.listFiles())) {
+            if (fileEntry.getPath().endsWith(".txt") || fileEntry.getPath().endsWith(".csv"))
+                tasks.add(new ScanWorker(argumentAndValue, getArguments(), fileEntry.getPath(), fileEntry.length()));
+        }
 
         job.setJobStatus(EJob.RUNNING);
         readFiles.invokeAll(tasks);

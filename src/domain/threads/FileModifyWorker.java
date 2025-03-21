@@ -24,6 +24,9 @@ public class FileModifyWorker implements Runnable {
             modified = false;
 
             for (final File fileEntry : Objects.requireNonNull(folder.listFiles())) {
+                if (!fileEntry.getPath().endsWith(".txt") && !fileEntry.getPath().endsWith(".csv"))
+                    continue;
+
                 if (fileEntry.lastModified() > modifiedDates.getOrDefault(fileEntry.getPath(), -1L)) {
                     modified = true;
                     modifiedDates.put(fileEntry.getPath(), fileEntry.lastModified());
@@ -44,8 +47,10 @@ public class FileModifyWorker implements Runnable {
     private void handleFileChanges() {
         File folder = new File(FileUtils.defaultFolder);
         List<Callable<String>> tasks = new ArrayList<>();
-        for (final File fileEntry : Objects.requireNonNull(folder.listFiles()))
-            tasks.add(new LoadInMemoryWorker(fileEntry.getPath()));
+        for (final File fileEntry : Objects.requireNonNull(folder.listFiles())) {
+            if (fileEntry.getPath().endsWith(".txt") || fileEntry.getPath().endsWith(".csv"))
+                tasks.add(new LoadInMemoryWorker(fileEntry.getPath()));
+        }
 
         for (Future<String> runningTask : runningTasks)
             runningTask.cancel(true);
