@@ -2,19 +2,20 @@ package domain.threads;
 
 import domain.Main;
 import domain.other.TemperatureInfo;
+import domain.utils.ProgramUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
-public class FileChangesWorker implements Callable<String> {
+public class LoadInMemoryWorker implements Callable<String> {
 
     private static final Object lock = new Object();
 
     private final String filePath;
 
-    public FileChangesWorker(String filePath) {
+    public LoadInMemoryWorker(String filePath) {
         this.filePath = filePath;
     }
 
@@ -23,7 +24,7 @@ public class FileChangesWorker implements Callable<String> {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath))) {
 
             String line;
-            while ((line = bufferedReader.readLine()) != null) {
+            while (ProgramUtils.running.get() && (line = bufferedReader.readLine()) != null) {
 
                 String[] nameAndTemp = line.split(";");
                 if (nameAndTemp.length < 2)
@@ -48,6 +49,9 @@ public class FileChangesWorker implements Callable<String> {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+
+        if (!ProgramUtils.running.get())
+            System.out.println("Interrupted Load In Memory");
 
         System.out.println("finish");
         return "";

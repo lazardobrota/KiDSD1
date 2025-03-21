@@ -1,5 +1,7 @@
 package domain.other;
 
+import domain.utils.ProgramUtils;
+
 public class Job {
 
     private final String name;
@@ -25,6 +27,7 @@ public class Job {
     }
 
     public void setJobStatus(EJob jobStatus) {
-        this.jobStatus = jobStatus;
+        if (ProgramUtils.running.get())
+            this.jobStatus = jobStatus;
     }
 }

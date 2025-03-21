@@ -6,6 +6,7 @@ import domain.other.TemperatureInfo;
 import domain.threads.FileModifyWorker;
 import domain.threads.ReadAsyncCommandWorker;
 import domain.threads.ReadCommandWorker;
+import domain.utils.ProgramUtils;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -59,10 +60,17 @@ public class Main {
             }
         }
 
+        ProgramUtils.running.set(false);
         fileModifyWorker.interrupt();
         readJobWorker.interrupt();
         readAsyncJobWorker.interrupt();
         System.out.println("Shutting down, please wait...");
         scanner.close();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

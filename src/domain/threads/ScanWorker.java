@@ -4,6 +4,7 @@ import domain.arguments.Argument;
 import domain.arguments.ArgumentSet;
 import domain.commands.ECommand;
 import domain.utils.FileUtils;
+import domain.utils.ProgramUtils;
 
 import java.io.*;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class ScanWorker implements Callable<String> {
 
             String line;
             StringBuilder stringBuilder = new StringBuilder();
-            while ((line = bufferedReader.readLine()) != null) {
+            while (ProgramUtils.running.get() && (line = bufferedReader.readLine()) != null) {
 
                 String[] nameAndTemp = line.split(";");
                 if (nameAndTemp.length < 2)
@@ -69,6 +70,10 @@ public class ScanWorker implements Callable<String> {
         } catch (IOException e) {
             System.out.println("There is no file on path: " + filePath);
         }
+
+        if (!ProgramUtils.running.get())
+            System.out.println("Interrupted Scan Worker");
+
         return "";
     }
 }
