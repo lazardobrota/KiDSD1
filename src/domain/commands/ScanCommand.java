@@ -78,6 +78,7 @@ public class ScanCommand extends Command {
         long start = System.currentTimeMillis();
 
         File outputFile = new File(FileUtils.defaultOutputFolder + "/" + argumentAndValue.get(Argument.SCAN_OUTPUT));
+        outputFile.getParentFile().mkdirs();
         outputFile.delete();
         outputFile.createNewFile();
 
@@ -88,17 +89,28 @@ public class ScanCommand extends Command {
         }
 
         job.setJobStatus(EJob.RUNNING);
-        readFiles.invokeAll(tasks);
+        try {
+            readFiles.invokeAll(tasks);
+        }
+        catch (InterruptedException e) {
+            System.out.println("AAAAAAA");
+            readFiles.shutdown();
+        }
         job.setJobStatus(EJob.COMPLETED);
 
         long end = System.currentTimeMillis();
         System.out.println("Time: " + (end - start));
 
+        Main.hashSyncCommands.remove(this);
     }
 
     @Override
     public Void call() throws Exception {
         execution();
         return null;
+    }
+
+    public Job getJob() {
+        return job;
     }
 }

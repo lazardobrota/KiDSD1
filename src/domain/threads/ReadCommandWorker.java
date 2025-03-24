@@ -17,8 +17,11 @@ public class ReadCommandWorker implements Runnable {
         while (ProgramUtils.running.get()) {
             try {
                 Command command = Main.queue.poll(10, TimeUnit.SECONDS);
-                if (command != null)
+                System.out.println("TAKEEEEEEEEEEE");
+                if (command != null) {
+                    Main.hashSyncCommands.add(command);
                     readFiles.submit(command);
+                }
 
             } catch (InterruptedException e) {
                 readFiles.shutdown();

@@ -33,6 +33,7 @@ public class ExportMapCommand extends Command {
 
         synchronized (lock) {
             File file = new File(FileUtils.defaultExportMapOutputFile);
+            file.getParentFile().mkdirs();
             file.delete();
             file.createNewFile();
 

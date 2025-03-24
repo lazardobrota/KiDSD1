@@ -9,9 +9,7 @@ import domain.threads.ReadAsyncCommandWorker;
 import domain.threads.ReadCommandWorker;
 import domain.utils.ProgramUtils;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -22,10 +20,14 @@ public class Main {
     public static Map<String, Job> jobsMap = new ConcurrentHashMap<>();
     public static BlockingQueue<Command> queue = new LinkedBlockingQueue<>();
     public static BlockingQueue<Command> asyncQueue = new LinkedBlockingQueue<>();
+    public static Set<Command> hashSyncCommands = new HashSet<>();
+
+
     public static Map<String, Command> commandMap = Map.ofEntries(
             Map.entry(ECommand.SCAN.getValue(), new ScanCommand()),
             Map.entry(ECommand.MAP.getValue(), new MapCommand()),
             Map.entry(ECommand.EXPORT_MAP.getValue(), new ExportMapCommand())
+
     );
     public static Map<String, Command> asyncCommandMap = Map.ofEntries(
             Map.entry(ECommand.STATUS.getValue(), new StatusCommand()),
@@ -51,8 +53,9 @@ public class Main {
             try {
                 String command = newCommand[0].toLowerCase();
 
-                if (command.equalsIgnoreCase(ECommand.SHUTDOWN.getValue()))
+                if (command.equalsIgnoreCase(ECommand.SHUTDOWN.getValue())) {
                     ProgramUtils.running.set(false);
+                }
 
                 if (!startCommandCalled && command.equalsIgnoreCase(ECommand.START.getValue())) {
                     startCommandCalled = true;
@@ -81,5 +84,9 @@ public class Main {
         backgroundExportWorker.interrupt();
         System.out.println("Shutting down, please wait...");
         scanner.close();
+
+        for (Thread thread : Thread.getAllStackTraces().keySet()) {
+            System.out.println("Thread Name: " + thread.getName() + " | State: " + thread.getState());
+        }
     }
 }
