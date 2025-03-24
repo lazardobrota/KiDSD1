@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ExportMapCommand extends Command {
+
+    private static final Object lock = new Object();
+
     public ExportMapCommand() {
         super(ECommand.EXPORT_MAP.getValue(), new ArgumentSet());
     }
@@ -26,31 +29,35 @@ public class ExportMapCommand extends Command {
 
     @Override
     public void execution() throws Exception {
-
-        if (!ProgramUtils.inMemoryFilled.get()) {
-            System.out.println("In Memory map is still not available");
-            return;
-        }
-
         Map<Character, TemperatureInfo> inMemoryMapCopy = new HashMap<>(Main.inMemoryMap);
-        File file = new File(FileUtils.defaultExportMapOutputFile);
-        file.delete();
-        file.createNewFile();
 
-        try (FileWriter fileWriter = new FileWriter(FileUtils.defaultExportMapOutputFile)) {
-            fileWriter.write("Letter, Station count, Sum\n");
-            for (TemperatureInfo item : inMemoryMapCopy.values()) {
-                fileWriter.write(item.toString().replaceAll(" - ", ", ").replaceAll(" : ", ", ") + "\n");
+        synchronized (lock) {
+            File file = new File(FileUtils.defaultExportMapOutputFile);
+            file.delete();
+            file.createNewFile();
+
+            try (FileWriter fileWriter = new FileWriter(FileUtils.defaultExportMapOutputFile)) {
+                fileWriter.write("Letter, Station count, Sum\n");
+                for (TemperatureInfo item : inMemoryMapCopy.values()) {
+                    fileWriter.write(item.toString().replaceAll(" - ", ", ").replaceAll(" : ", ", ") + "\n");
+                }
+            } catch (Exception e) {
+                throw new Exception("Invalid ExportMap output file");
             }
-        } catch (Exception e) {
-            throw new Exception("Invalid ExportMap output file");
         }
+
 
     }
 
     @Override
     public Void call() throws Exception {
+        if (!ProgramUtils.inMemoryFilled.get()) {
+            System.out.println("In Memory map is still not available");
+            return null;
+        }
+
         execution();
+
         return null;
     }
 }

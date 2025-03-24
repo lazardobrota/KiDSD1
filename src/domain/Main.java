@@ -3,6 +3,7 @@ package domain;
 import domain.commands.*;
 import domain.other.Job;
 import domain.other.TemperatureInfo;
+import domain.threads.BackgroundExportWorker;
 import domain.threads.FileModifyWorker;
 import domain.threads.ReadAsyncCommandWorker;
 import domain.threads.ReadCommandWorker;
@@ -38,9 +39,11 @@ public class Main {
         Thread fileModifyWorker = new Thread(new FileModifyWorker());
         Thread readJobWorker = new Thread(new ReadCommandWorker());
         Thread readAsyncJobWorker = new Thread(new ReadAsyncCommandWorker());
+        Thread backgroundExportWorker = new Thread(new BackgroundExportWorker());
         fileModifyWorker.start();
         readJobWorker.start();
         readAsyncJobWorker.start();
+        backgroundExportWorker.start();
 
         boolean startCommandCalled = false;
         while (ProgramUtils.running.get()) {
@@ -75,6 +78,7 @@ public class Main {
         fileModifyWorker.interrupt();
         readJobWorker.interrupt();
         readAsyncJobWorker.interrupt();
+        backgroundExportWorker.interrupt();
         System.out.println("Shutting down, please wait...");
         scanner.close();
     }

@@ -2,13 +2,9 @@ package domain.commands;
 
 import domain.arguments.Argument;
 import domain.arguments.ArgumentSet;
-import domain.other.Job;
-import domain.utils.ProgramUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class ShutdownCommand extends Command {
 

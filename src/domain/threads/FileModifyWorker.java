@@ -1,5 +1,6 @@
 package domain.threads;
 
+import domain.Main;
 import domain.utils.FileUtils;
 import domain.utils.ProgramUtils;
 
@@ -47,6 +48,7 @@ public class FileModifyWorker implements Runnable {
     }
 
     private void handleFileChanges() {
+        Main.inMemoryMap.clear();
         File folder = new File(FileUtils.defaultFolder);
         List<Callable<String>> tasks = new ArrayList<>();
         for (final File fileEntry : Objects.requireNonNull(folder.listFiles())) {
