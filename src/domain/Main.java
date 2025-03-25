@@ -84,9 +84,5 @@ public class Main {
         backgroundExportWorker.interrupt();
         System.out.println("Shutting down, please wait...");
         scanner.close();
-
-        for (Thread thread : Thread.getAllStackTraces().keySet()) {
-            System.out.println("Thread Name: " + thread.getName() + " | State: " + thread.getState());
-        }
     }
 }

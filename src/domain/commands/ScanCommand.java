@@ -71,7 +71,7 @@ public class ScanCommand extends Command {
         if (job == null)
             throw new Exception("Job can't be null");
 
-        String folderPath = "files";
+        String folderPath = FileUtils.defaultFolder;
 
         File folder = new File(folderPath);
         if (folder.listFiles() == null) {

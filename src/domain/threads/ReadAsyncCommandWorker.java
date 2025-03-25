@@ -10,11 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ReadAsyncCommandWorker implements Runnable {
 
-    private static final ExecutorService readFiles = Executors.newFixedThreadPool(4, runnable -> {
-        Thread thread = new Thread(runnable);
-        thread.setDaemon(true);
-        return thread;
-    });
+    private static final ExecutorService readFiles = Executors.newFixedThreadPool(4);
 
     @Override
     public void run() {

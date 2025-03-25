@@ -28,21 +28,20 @@ public class ScanWorker implements Callable<String> {
 
     @Override
     public String call() throws Exception {
-        double max = (double) Argument.SCAN_MAX.parseOrDefault(argumentAndValue.get(Argument.SCAN_MAX), -1.0);
-        double min = (double) Argument.SCAN_MIN.parseOrDefault(argumentAndValue.get(Argument.SCAN_MIN), -1.0);
+        double max = (double) Argument.SCAN_MAX.parseOrDefault(argumentAndValue.get(Argument.SCAN_MAX), Double.MAX_VALUE);
+        double min = (double) Argument.SCAN_MIN.parseOrDefault(argumentAndValue.get(Argument.SCAN_MIN), Double.MIN_VALUE);
         String letter = (String) Argument.SCAN_LETTER.parseOrDefault(argumentAndValue.get(Argument.SCAN_LETTER), "");
         String outputFileName = (String) Argument.SCAN_OUTPUT.parseOrThrow(argumentAndValue.get(Argument.SCAN_OUTPUT), ECommand.SCAN.getValue());
 
         File outputFile = new File(FileUtils.defaultOutputFolder + "/" + outputFileName);
 
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath));
-             FileWriter outputFileWriter = new FileWriter(outputFile, true)) {
+             BufferedWriter outputBufferedWriter = new BufferedWriter(new FileWriter(outputFile, true))) {
 
             if (filePath.endsWith(".csv"))
                 bufferedReader.readLine();
 
             String line;
-            StringBuilder stringBuilder = new StringBuilder();
             while (ProgramUtils.running.get() && (line = bufferedReader.readLine()) != null) {
 
                 String[] nameAndTemp = line.split(";");
@@ -52,24 +51,20 @@ public class ScanWorker implements Callable<String> {
                 double temp;
                 try {
                     temp = Double.parseDouble(nameAndTemp[1]);
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
                     continue;
                 }
 
-                if (max > 0 && temp > max)
+                if (temp > max || temp < min)
                     continue;
-                if (min > 0 && temp < min)
-                    continue;
-                if (!letter.isBlank() && !nameAndTemp[0].toLowerCase().startsWith(letter))
+                if (!letter.isEmpty() && !nameAndTemp[0].toLowerCase().startsWith(letter))
                     continue;
 
-                stringBuilder.append(nameAndTemp[0]).append(" ").append(nameAndTemp[1]).append("\n");
-                Thread.sleep(100);
-            }
-
-            synchronized (lock) {
-                outputFileWriter.write(stringBuilder.toString());
-                outputFileWriter.flush();
+                synchronized (lock) {
+                    outputBufferedWriter.write(nameAndTemp[0] + " " + nameAndTemp[1] + System.lineSeparator());
+                    outputBufferedWriter.flush();
+                }
+//                Thread.sleep(100);
             }
         } catch (IOException e) {
             System.out.println("There is no file on path: " + filePath);
