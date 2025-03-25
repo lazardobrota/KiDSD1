@@ -7,6 +7,7 @@ import domain.threads.BackgroundExportWorker;
 import domain.threads.FileModifyWorker;
 import domain.threads.ReadAsyncCommandWorker;
 import domain.threads.ReadCommandWorker;
+import domain.utils.FileUtils;
 import domain.utils.ProgramUtils;
 
 import java.util.*;
@@ -37,6 +38,9 @@ public class Main {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Absolute Folder Path: ");
+        FileUtils.defaultFolder = scanner.nextLine();
 
         Thread fileModifyWorker = new Thread(new FileModifyWorker());
         Thread readJobWorker = new Thread(new ReadCommandWorker());

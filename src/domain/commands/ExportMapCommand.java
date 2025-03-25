@@ -6,6 +6,7 @@ import domain.other.TemperatureInfo;
 import domain.utils.FileUtils;
 import domain.utils.ProgramUtils;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.HashMap;
@@ -37,10 +38,10 @@ public class ExportMapCommand extends Command {
             file.delete();
             file.createNewFile();
 
-            try (FileWriter fileWriter = new FileWriter(FileUtils.defaultExportMapOutputFile)) {
-                fileWriter.write("Letter, Station count, Sum\n");
+            try (BufferedWriter bufferedWriter  = new BufferedWriter(new FileWriter(FileUtils.defaultExportMapOutputFile))) {
+                bufferedWriter.write("Letter, Station count, Sum\n");
                 for (TemperatureInfo item : inMemoryMapCopy.values()) {
-                    fileWriter.write(item.toString().replaceAll(" - ", ", ").replaceAll(" : ", ", ") + "\n");
+                    bufferedWriter.write(item.toString().replaceAll(" - ", ", ").replaceAll(" : ", ", ") + "\n");
                 }
             } catch (Exception e) {
                 throw new Exception("Invalid ExportMap output file");

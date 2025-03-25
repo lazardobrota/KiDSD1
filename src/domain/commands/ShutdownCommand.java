@@ -6,6 +6,7 @@ import domain.arguments.ArgumentSet;
 import domain.utils.FileUtils;
 import domain.utils.ProgramUtils;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
@@ -58,11 +59,11 @@ public class ShutdownCommand extends Command {
         file.delete();
         file.createNewFile();
 
-        try (FileWriter fileWriter = new FileWriter(file)) {
+        try (BufferedWriter bufferedWriter  = new BufferedWriter(new FileWriter(file))) {
             Queue<Command> queue = new LinkedList<>(Main.hashSyncCommands);
             while (!queue.isEmpty()) {
                 if (queue.poll() instanceof ScanCommand scanCommand) {
-                    fileWriter.write(scanCommand.getJob().getWholeCommand() + "\n");
+                    bufferedWriter.write(scanCommand.getJob().getWholeCommand() + "\n");
                 }
             }
         } catch (Exception e) {

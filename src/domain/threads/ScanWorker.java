@@ -62,7 +62,7 @@ public class ScanWorker implements Callable<String> {
 
                 synchronized (lock) {
                     outputBufferedWriter.write(nameAndTemp[0] + " " + nameAndTemp[1] + System.lineSeparator());
-                    outputBufferedWriter.flush();
+//                    outputBufferedWriter.flush();
                 }
 //                Thread.sleep(100);
             }
