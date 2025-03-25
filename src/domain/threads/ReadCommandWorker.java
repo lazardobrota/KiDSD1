@@ -10,14 +10,17 @@ import java.util.concurrent.TimeUnit;
 
 public class ReadCommandWorker implements Runnable {
 
-    private static final ExecutorService readFiles = Executors.newFixedThreadPool(1);
+    private static final ExecutorService readFiles = Executors.newFixedThreadPool(1, runnable -> {
+        Thread thread = new Thread(runnable);
+        thread.setDaemon(true);
+        return thread;
+    });
 
     @Override
     public void run() {
         while (ProgramUtils.running.get()) {
             try {
                 Command command = Main.queue.poll(10, TimeUnit.SECONDS);
-                System.out.println("TAKEEEEEEEEEEE");
                 if (command != null) {
                     Main.hashSyncCommands.add(command);
                     readFiles.submit(command);

@@ -62,7 +62,7 @@ public class Main {
                     System.out.println("Program started");
                 }
 
-                if (!startCommandCalled)
+                if (!startCommandCalled && ProgramUtils.running.get())
                     throw new Exception("Write '%s' to start program".formatted(ECommand.START.getValue()));
 
                 if (commandMap.containsKey(command))

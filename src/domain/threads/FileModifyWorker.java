@@ -14,7 +14,11 @@ import java.util.concurrent.Future;
 public class FileModifyWorker implements Runnable {
 
     private final Map<String, Long> modifiedDates = new HashMap<>();
-    private static final ExecutorService fillInMemoryMap = Executors.newFixedThreadPool(4);
+    private static final ExecutorService fillInMemoryMap = Executors.newFixedThreadPool(4, runnable -> {
+        Thread thread = new Thread(runnable);
+        thread.setDaemon(true);
+        return thread;
+    });
     private static List<Future<String>> runningTasks = new ArrayList<>();
 
     @Override

@@ -16,7 +16,11 @@ import java.util.concurrent.Executors;
 
 public class ScanCommand extends Command {
 
-    private static final ExecutorService readFiles = Executors.newFixedThreadPool(4);
+    private static final ExecutorService readFiles = Executors.newFixedThreadPool(4, runnable -> {
+        Thread thread = new Thread(runnable);
+        thread.setDaemon(true);
+        return thread;
+    });
     private final Map<Argument, String> argumentAndValue;
     private final Job job;
 
@@ -93,7 +97,6 @@ public class ScanCommand extends Command {
             readFiles.invokeAll(tasks);
         }
         catch (InterruptedException e) {
-            System.out.println("AAAAAAA");
             readFiles.shutdown();
         }
         job.setJobStatus(EJob.COMPLETED);

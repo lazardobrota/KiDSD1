@@ -64,6 +64,7 @@ public class ScanWorker implements Callable<String> {
                     continue;
 
                 stringBuilder.append(nameAndTemp[0]).append(" ").append(nameAndTemp[1]).append("\n");
+                Thread.sleep(100);
             }
 
             synchronized (lock) {

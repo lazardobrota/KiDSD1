@@ -12,7 +12,7 @@ public class ReadAsyncCommandWorker implements Runnable {
 
     private static final ExecutorService readFiles = Executors.newFixedThreadPool(4, runnable -> {
         Thread thread = new Thread(runnable);
-        thread.setDaemon(false);
+        thread.setDaemon(true);
         return thread;
     });
 
