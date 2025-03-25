@@ -42,6 +42,9 @@ public class FileModifyWorker implements Runnable {
                 ProgramUtils.inMemoryFilled.set(false);
                 handleFileChanges();
                 ProgramUtils.inMemoryFilled.set(true);
+                synchronized (ProgramUtils.lock) {
+                    ProgramUtils.lock.notifyAll();
+                }
             }
         }
 

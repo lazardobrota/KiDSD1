@@ -6,4 +6,5 @@ public class ProgramUtils {
 
     public static AtomicBoolean running = new AtomicBoolean(true);
     public static AtomicBoolean inMemoryFilled = new AtomicBoolean(false);
+    public static final Object lock = new Object();
 }

@@ -35,6 +35,12 @@ public class ScanWorker implements Callable<String> {
 
         File outputFile = new File(FileUtils.defaultOutputFolder + "/" + outputFileName);
 
+        while (!ProgramUtils.inMemoryFilled.get()) {
+            synchronized (ProgramUtils.lock) {
+                ProgramUtils.lock.wait();
+            }
+        }
+
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath));
              BufferedWriter outputBufferedWriter = new BufferedWriter(new FileWriter(outputFile, true))) {
 
@@ -43,6 +49,12 @@ public class ScanWorker implements Callable<String> {
 
             String line;
             while (ProgramUtils.running.get() && (line = bufferedReader.readLine()) != null) {
+
+                while (!ProgramUtils.inMemoryFilled.get()) {
+                    synchronized (ProgramUtils.lock) {
+                        ProgramUtils.lock.wait();
+                    }
+                }
 
                 String[] nameAndTemp = line.split(";");
                 if (nameAndTemp.length < 2)
@@ -64,7 +76,6 @@ public class ScanWorker implements Callable<String> {
                     outputBufferedWriter.write(nameAndTemp[0] + " " + nameAndTemp[1] + System.lineSeparator());
 //                    outputBufferedWriter.flush();
                 }
-//                Thread.sleep(100);
             }
         } catch (IOException e) {
             System.out.println("There is no file on path: " + filePath);
