@@ -48,8 +48,7 @@ public class ShutdownCommand extends Command {
         if (argumentsHash == null)
             throw new Exception("ArgumentAndValue can't be null");
 
-
-        ProgramUtils.running.set(false);
+        System.out.println("Shutting down, please wait...");
 
         if (!argumentsHash.contains(Argument.SHUTDOWN_SAVE_JOB))
             return;
@@ -61,6 +60,8 @@ public class ShutdownCommand extends Command {
 
         try (BufferedWriter bufferedWriter  = new BufferedWriter(new FileWriter(file))) {
             Queue<Command> queue = new LinkedList<>(Main.hashSyncCommands);
+            queue.addAll(Main.queue);
+            System.out.println("AAAAAAAAAAAAAAA");
             while (!queue.isEmpty()) {
                 if (queue.poll() instanceof ScanCommand scanCommand) {
                     bufferedWriter.write(scanCommand.getJob().getWholeCommand() + "\n");
@@ -70,6 +71,7 @@ public class ShutdownCommand extends Command {
             throw new Exception("Invalid ExportMap output file");
         }
 
+        ProgramUtils.running.set(false);
     }
 
     @Override

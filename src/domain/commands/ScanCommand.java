@@ -92,6 +92,7 @@ public class ScanCommand extends Command {
                 tasks.add(new ScanWorker(argumentAndValue, getArguments(), fileEntry.getPath(), fileEntry.length()));
         }
 
+        Main.hashSyncCommands.add(this);
         job.setJobStatus(EJob.RUNNING);
         try {
             readFiles.invokeAll(tasks);

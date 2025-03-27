@@ -51,15 +51,12 @@ public class Main {
         readAsyncJobWorker.start();
         backgroundExportWorker.start();
 
+        //TODO Make this its own thread or something just not to enter .nextLine() after shutdwon
         boolean startCommandCalled = false;
         while (ProgramUtils.running.get()) {
             String[] newCommand = scanner.nextLine().split("\\s+");
             try {
                 String command = newCommand[0].toLowerCase();
-
-                if (command.equalsIgnoreCase(ECommand.SHUTDOWN.getValue())) {
-                    ProgramUtils.running.set(false);
-                }
 
                 if (!startCommandCalled && command.equalsIgnoreCase(ECommand.START.getValue())) {
                     startCommandCalled = true;
@@ -86,7 +83,6 @@ public class Main {
         readJobWorker.interrupt();
         readAsyncJobWorker.interrupt();
         backgroundExportWorker.interrupt();
-        System.out.println("Shutting down, please wait...");
         scanner.close();
     }
 }
