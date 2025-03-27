@@ -51,12 +51,16 @@ public class Main {
         readAsyncJobWorker.start();
         backgroundExportWorker.start();
 
-        //TODO Make this its own thread or something just not to enter .nextLine() after shutdwon
         boolean startCommandCalled = false;
         while (ProgramUtils.running.get()) {
             String[] newCommand = scanner.nextLine().split("\\s+");
             try {
                 String command = newCommand[0].toLowerCase();
+
+                if (command.equalsIgnoreCase(ECommand.SHUTDOWN.getValue())) {
+                    asyncCommandMap.get(command).parse(Arrays.copyOfRange(newCommand, 1, newCommand.length)).execution();
+                    continue;
+                }
 
                 if (!startCommandCalled && command.equalsIgnoreCase(ECommand.START.getValue())) {
                     startCommandCalled = true;
