@@ -61,7 +61,6 @@ public class ShutdownCommand extends Command {
         try (BufferedWriter bufferedWriter  = new BufferedWriter(new FileWriter(file))) {
             Queue<Command> queue = new LinkedList<>(Main.hashSyncCommands);
             queue.addAll(Main.queue);
-            System.out.println("AAAAAAAAAAAAAAA");
             while (!queue.isEmpty()) {
                 if (queue.poll() instanceof ScanCommand scanCommand) {
                     bufferedWriter.write(scanCommand.getJob().getWholeCommand() + "\n");
