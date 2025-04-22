@@ -1,9 +1,9 @@
 ### IntelliJ IDEA ###
 .idea
 out/
-files/
-files_big/
-fileOutputs/
+snapshot-primer/error/
+snapshot-primer/input/
+snapshot-primer/output/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
