@@ -4,10 +4,10 @@ import app.snapshot_bitcake.SnapshotCollector;
 
 public class BitcakeInfoCommand implements CLICommand {
 
-	private SnapshotCollector collector;
+	private final SnapshotCollector snapshotCollector;
 	
-	public BitcakeInfoCommand(SnapshotCollector collector) {
-		this.collector = collector;
+	public BitcakeInfoCommand(SnapshotCollector snapshotCollector) {
+		this.snapshotCollector = snapshotCollector;
 	}
 	
 	@Override
@@ -17,7 +17,7 @@ public class BitcakeInfoCommand implements CLICommand {
 
 	@Override
 	public void execute(String args) {
-		collector.startCollecting();
+		snapshotCollector.startCollecting();
 
 	}
 

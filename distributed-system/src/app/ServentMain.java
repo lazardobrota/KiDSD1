@@ -8,13 +8,13 @@ import app.snapshot_bitcake.SnapshotCollector;
 import app.snapshot_bitcake.SnapshotCollectorWorker;
 import app.snapshot_bitcake.SnapshotType;
 import cli.CLIParser;
-import servent.SimpleServentListener;
+import servent.SimpleServantListener;
+import servent.message.util.FifoSendWorker;
 import servent.message.util.MessageUtil;
 
 /**
  * Describes the procedure for starting a single Servent
  *
- * @author bmilojkovic
  */
 public class ServentMain {
 
@@ -32,11 +32,12 @@ public class ServentMain {
 		int portNumber = -1;
 		
 		String serventListFile = args[0];
-		
 		AppConfig.readConfig(serventListFile);
-		
+//		AppConfig.readConfig("snapshot-primer/servent_list.properties");
+
 		try {
 			serventId = Integer.parseInt(args[1]);
+//			serventId = 0;
 		} catch (NumberFormatException e) {
 			AppConfig.timestampedErrorPrint("Second argument should be an int. Exiting...");
 			System.exit(0);
@@ -74,11 +75,25 @@ public class ServentMain {
 		Thread snapshotCollectorThread = new Thread(snapshotCollector);
 		snapshotCollectorThread.start();
 		
-		SimpleServentListener simpleListener = new SimpleServentListener(snapshotCollector);
+		SimpleServantListener simpleListener = new SimpleServantListener(snapshotCollector);
 		Thread listenerThread = new Thread(simpleListener);
 		listenerThread.start();
+
+		List<FifoSendWorker> senderWorkers = new ArrayList<>();
+		if (AppConfig.IS_FIFO) {
+			for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
+				FifoSendWorker senderWorker = new FifoSendWorker(neighbor);
+
+				Thread senderThread = new Thread(senderWorker);
+
+				senderThread.start();
+
+				senderWorkers.add(senderWorker);
+			}
+
+		}
 		
-		CLIParser cliParser = new CLIParser(simpleListener, snapshotCollector);
+		CLIParser cliParser = new CLIParser(simpleListener, senderWorkers, snapshotCollector);
 		Thread cliThread = new Thread(cliParser);
 		cliThread.start();
 		

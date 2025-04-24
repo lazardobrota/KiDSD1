@@ -1,10 +1,9 @@
 package app.snapshot_bitcake;
 
+import app.snapshot_bitcake.result.CCSnapshotResult;
+
 /**
  * This class is used if the user hasn't specified a snapshot type in config.
- * 
- * @author bmilojkovic
- *
  */
 public class NullSnapshotCollector implements SnapshotCollector {
 
@@ -21,6 +20,11 @@ public class NullSnapshotCollector implements SnapshotCollector {
 
 	@Override
 	public void addNaiveSnapshotInfo(String snapshotSubject, int amount) {}
+
+	@Override
+	public void addCCSnapshotInfo(int id, CCSnapshotResult ccSnapshotResult) {
+
+	}
 
 
 	@Override

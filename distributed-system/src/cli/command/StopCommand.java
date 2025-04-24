@@ -5,18 +5,21 @@ import java.util.List;
 import app.AppConfig;
 import app.snapshot_bitcake.SnapshotCollector;
 import cli.CLIParser;
-import servent.SimpleServentListener;
+import servent.SimpleServantListener;
+import servent.message.util.FifoSendWorker;
 
 public class StopCommand implements CLICommand {
 
-	private CLIParser parser;
-	private SimpleServentListener listener;
-	private SnapshotCollector snapshotCollector;
+	private final CLIParser parser;
+	private final SimpleServantListener listener;
+	private final SnapshotCollector snapshotCollector;
+	private final List<FifoSendWorker> senderWorkers;
 	
-	public StopCommand(CLIParser parser, SimpleServentListener listener, SnapshotCollector snapshotCollector) {
+	public StopCommand(CLIParser parser, SimpleServantListener listener, List<FifoSendWorker> senderWorkers, SnapshotCollector snapshotCollector) {
 		this.parser = parser;
 		this.listener = listener;
 		this.snapshotCollector = snapshotCollector;
+		this.senderWorkers = senderWorkers;
 	}
 	
 	@Override
@@ -29,6 +32,9 @@ public class StopCommand implements CLICommand {
 		AppConfig.timestampedStandardPrint("Stopping...");
 		parser.stop();
 		listener.stop();
+		for (FifoSendWorker senderWorker : senderWorkers) {
+			senderWorker.stop();
+		}
 		snapshotCollector.stop();
 	}
 

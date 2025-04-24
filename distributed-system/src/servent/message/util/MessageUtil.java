@@ -21,7 +21,6 @@ import servent.message.MessageType;
  * 
  * When reading, if we are FIFO, we send an ACK message on the same socket, so the other side
  * knows they can send the next message.
- * @author bmilojkovic
  *
  */
 public class MessageUtil {
@@ -33,11 +32,11 @@ public class MessageUtil {
 	public static final boolean MESSAGE_UTIL_PRINTING = true;
 	
 	public static Map<Integer, BlockingQueue<Message>> pendingMessages = new ConcurrentHashMap<>();
-	public static Map<Integer, BlockingQueue<Message>> pendingMarkers = new ConcurrentHashMap<>();
+	public static Map<Integer, BlockingQueue<Message>> pendingSnapshots = new ConcurrentHashMap<>();
 	
 	public static void initializePendingMessages() {
 		for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
-			pendingMarkers.put(neighbor, new LinkedBlockingQueue<>());
+			pendingSnapshots.put(neighbor, new LinkedBlockingQueue<>());
 			pendingMessages.put(neighbor, new LinkedBlockingQueue<>());
 		}
 	}
@@ -51,15 +50,16 @@ public class MessageUtil {
 	
 			clientMessage = (Message) ois.readObject();
 			
-			if (AppConfig.IS_FIFO) {
-				String response = "ACK";
-				ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-				oos.writeObject(response);
-				oos.flush();
-			}
+//			if (AppConfig.IS_FIFO) {
+//				String response = "ACK";
+//				ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+//				oos.writeObject(response);
+//				oos.flush();
+//			}
 			
 			socket.close();
 		} catch (IOException e) {
+			//TODO for some reason it gets here
 			AppConfig.timestampedErrorPrint("Error in reading socket on " +
 					socket.getInetAddress() + ":" + socket.getPort());
 		} catch (ClassNotFoundException e) {
@@ -74,8 +74,20 @@ public class MessageUtil {
 	}
 	
 	public static void sendMessage(Message message) {
-		Thread delayedSender = new Thread(new DelayedMessageSender(message));
+		if (AppConfig.IS_FIFO) {
+			try {
+				if (message.getMessageType() == MessageType.SNAPSHOT_REQUEST) {
+					pendingSnapshots.get(message.getReceiverInfo().getId()).put(message);
+				} else {
+					pendingMessages.get(message.getReceiverInfo().getId()).put(message);
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		} else {
+			Thread delayedSender = new Thread(new DelayedMessageSender(message));
 
-		delayedSender.start();
+			delayedSender.start();
+		}
 	}
 }

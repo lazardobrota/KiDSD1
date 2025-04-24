@@ -27,7 +27,6 @@ import app.ServentInfo;
  * 		</ul>
  * 	<li>Equality and hashability based on message id and original sender id</li>
  * </ul>
- * @author bmilojkovic
  *
  */
 public interface Message extends Serializable {

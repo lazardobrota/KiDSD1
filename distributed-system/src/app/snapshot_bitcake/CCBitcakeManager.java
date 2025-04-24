@@ -1,0 +1,152 @@
+package app.snapshot_bitcake;
+
+import app.AppConfig;
+import app.snapshot_bitcake.result.CCSnapshotResult;
+import servent.message.CCAckMessage;
+import servent.message.CCSnapshotMessage;
+import servent.message.Message;
+import servent.message.MessageType;
+import servent.message.util.MessageUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class CCBitcakeManager implements BitcakeManager {
+
+    private final AtomicInteger currentAmount = new AtomicInteger(1000);
+
+    @Override
+    public void takeSomeBitcakes(int amount) {
+        currentAmount.getAndAdd(-amount);
+    }
+
+    @Override
+    public void addSomeBitcakes(int amount) {
+        currentAmount.getAndAdd(amount);
+    }
+
+    @Override
+    public int getCurrentBitcakeAmount() {
+        return currentAmount.get();
+    }
+
+    public int recordedBitcakeAmount = 0;
+
+    private final Map<Integer, Boolean> closedChannels = new ConcurrentHashMap<>();
+    private final Map<String, List<Integer>> allChannelTransactions = new ConcurrentHashMap<>();
+    private final Object allChannelTransactionsLock = new Object();
+
+    /**
+     * This is invoked when we are white and get a marker. Basically,
+     * we or someone alse have started recording a snapshot.
+     * This method does the following:
+     * <ul>
+     * <li>Makes us red</li>
+     * <li>Records our bitcakes</li>
+     * <li>Sets all channels to not closed</li>
+     * <li>Sends markers to all neighbors</li>
+     * </ul>
+     * @param collectorId - id of collector node, to be put into marker messages for others.
+     */
+    public void snapshotEvent(int collectorId) {
+        synchronized (AppConfig.colorLock) {
+            AppConfig.timestampedStandardPrint("Going red");
+            AppConfig.isWhite.set(false);
+            recordedBitcakeAmount = getCurrentBitcakeAmount();
+
+            for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
+                closedChannels.put(neighbor, false);
+                Message ccMarker = new CCSnapshotMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor), collectorId);
+                MessageUtil.sendMessage(ccMarker);
+                try {
+                    /**
+                     * This sleep is here to artificially produce some white node -> red node messages
+                     */
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * This is invoked whenever we get a marker from another node. We do the following:
+     * <ul>
+     * <li>If we are white, we do markerEvent()</li>
+     * <li>We mark the channel of the person that sent the marker as closed</li>
+     * <li>If we are done, we report our snapshot result to the collector</li>
+     * </ul>
+     */
+    public void handleSnapshot(Message clientMessage, SnapshotCollector snapshotCollector) {
+        synchronized (AppConfig.colorLock) {
+            int collectorId = Integer.parseInt(clientMessage.getMessageText());
+
+            if (AppConfig.isWhite.get()) {
+                snapshotEvent(collectorId);
+            }
+
+            closedChannels.put(clientMessage.getOriginalSenderInfo().getId(), true);
+
+            if (isDone()) {
+                CCSnapshotResult snapshotResult = new CCSnapshotResult(
+                        AppConfig.myServentInfo.getId(), recordedBitcakeAmount, allChannelTransactions);
+
+                if (AppConfig.myServentInfo.getId() == collectorId) {
+                    snapshotCollector.addCCSnapshotInfo(collectorId, snapshotResult);
+                } else {
+                    Message ccAckMessage = new CCAckMessage(
+                            AppConfig.myServentInfo, AppConfig.getInfoById(collectorId),
+                            snapshotResult);
+
+                    MessageUtil.sendMessage(ccAckMessage);
+                }
+
+                recordedBitcakeAmount = 0;
+                allChannelTransactions.clear();
+                AppConfig.timestampedStandardPrint("Going white");
+                AppConfig.isWhite.set(true);
+            }
+        }
+    }
+
+    /**
+     * Checks if we are done being red. This happens when all channels are closed.
+     * @return if snapshot is done or not or was never even in snapshot mode
+     */
+    private boolean isDone() {
+        if (AppConfig.isWhite.get()) {
+            return false;
+        }
+
+        AppConfig.timestampedStandardPrint(closedChannels.toString());
+
+        for (Map.Entry<Integer, Boolean> closedChannel : closedChannels.entrySet()) {
+            if (closedChannel.getValue() == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Records a channel message. This will be invoked if we are red and
+     * get a message that is not a marker.
+     * @param clientMessage Message that client has sent
+     */
+    public void addChannelMessage(Message clientMessage) {
+        if (clientMessage.getMessageType() == MessageType.TRANSACTION) {
+            synchronized (allChannelTransactionsLock) {
+                String channelName = "channel " + AppConfig.myServentInfo.getId() + "<-" + clientMessage.getOriginalSenderInfo().getId();
+
+                List<Integer> channelMessages = allChannelTransactions.getOrDefault(channelName, new ArrayList<>());
+                channelMessages.add(Integer.parseInt(clientMessage.getMessageText()));
+                allChannelTransactions.put(channelName, channelMessages);
+            }
+        }
+    }
+}

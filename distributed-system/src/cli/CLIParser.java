@@ -13,7 +13,8 @@ import cli.command.InfoCommand;
 import cli.command.PauseCommand;
 import cli.command.StopCommand;
 import cli.command.TransactionBurstCommand;
-import servent.SimpleServentListener;
+import servent.SimpleServantListener;
+import servent.message.util.FifoSendWorker;
 
 /**
  * A simple CLI parser. Each command has a name and arbitrary arguments.
@@ -29,8 +30,7 @@ import servent.SimpleServentListener;
  * <li><code>print_causal</code> - prints all received causal broadcast messages</li>
  * <li><code>stop</code> - stops the servent and program finishes</li>
  * </ul>
- * 
- * @author bmilojkovic
+ *
  *
  */
 public class CLIParser implements Runnable, Cancellable {
@@ -39,14 +39,14 @@ public class CLIParser implements Runnable, Cancellable {
 	
 	private final List<CLICommand> commandList;
 	
-	public CLIParser(SimpleServentListener listener, SnapshotCollector snapshotCollector) {
+	public CLIParser(SimpleServantListener listener, List<FifoSendWorker> senderWorkers, SnapshotCollector snapshotCollector) {
 		this.commandList = new ArrayList<>();
 		
 		commandList.add(new InfoCommand());
 		commandList.add(new PauseCommand());
 		commandList.add(new TransactionBurstCommand(snapshotCollector.getBitcakeManager()));
 		commandList.add(new BitcakeInfoCommand(snapshotCollector));
-		commandList.add(new StopCommand(this, listener, snapshotCollector));
+		commandList.add(new StopCommand(this, listener, senderWorkers, snapshotCollector));
 	}
 	
 	@Override
