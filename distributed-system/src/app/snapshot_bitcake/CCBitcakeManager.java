@@ -2,10 +2,7 @@ package app.snapshot_bitcake;
 
 import app.AppConfig;
 import app.snapshot_bitcake.result.CCSnapshotResult;
-import servent.message.CCAckMessage;
-import servent.message.CCSnapshotMessage;
-import servent.message.Message;
-import servent.message.MessageType;
+import servent.message.*;
 import servent.message.util.MessageUtil;
 
 import java.util.ArrayList;
@@ -49,6 +46,7 @@ public class CCBitcakeManager implements BitcakeManager {
      * <li>Sets all channels to not closed</li>
      * <li>Sends markers to all neighbors</li>
      * </ul>
+     *
      * @param collectorId - id of collector node, to be put into marker messages for others.
      */
     public void snapshotEvent(int collectorId) {
@@ -97,6 +95,7 @@ public class CCBitcakeManager implements BitcakeManager {
 
                 if (AppConfig.myServentInfo.getId() == collectorId) {
                     snapshotCollector.addCCSnapshotInfo(collectorId, snapshotResult);
+                    handleResume(collectorId);
                 } else {
                     Message ccAckMessage = new CCAckMessage(
                             AppConfig.myServentInfo, AppConfig.getInfoById(collectorId),
@@ -107,14 +106,43 @@ public class CCBitcakeManager implements BitcakeManager {
 
                 recordedBitcakeAmount = 0;
                 allChannelTransactions.clear();
-                AppConfig.timestampedStandardPrint("Going white");
-                AppConfig.isWhite.set(true);
+//                AppConfig.timestampedStandardPrint("Going white");
+//                AppConfig.isWhite.set(true);
+            }
+        }
+    }
+
+    //TODO When changing to white node we have white -> red which means in transaction items will be send to AllChannelTransaction
+    // so some amount of bitcakes wont be saved since Transaction doesnt look into AllChannelTransaction i think?
+    public void handleResume(int collectorId) {
+        synchronized (AppConfig.colorLock) {
+
+            if (AppConfig.isWhite.get())
+                return;
+
+            AppConfig.timestampedStandardPrint("Going white");
+            AppConfig.isWhite.set(true);
+
+            AppConfig.timestampedStandardPrint("Telling neighbors to resume");
+
+            for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
+                Message ccResume = new CCResumeMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor), collectorId);
+                MessageUtil.sendMessage(ccResume);
+                try {
+                    /**
+                     * This sleep is here to artificially produce some red node -> white node messages
+                     */
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
     /**
      * Checks if we are done being red. This happens when all channels are closed.
+     *
      * @return if snapshot is done or not or was never even in snapshot mode
      */
     private boolean isDone() {
@@ -125,7 +153,7 @@ public class CCBitcakeManager implements BitcakeManager {
         AppConfig.timestampedStandardPrint(closedChannels.toString());
 
         for (Map.Entry<Integer, Boolean> closedChannel : closedChannels.entrySet()) {
-            if (closedChannel.getValue() == false) {
+            if (!closedChannel.getValue()) {
                 return false;
             }
         }
@@ -136,6 +164,7 @@ public class CCBitcakeManager implements BitcakeManager {
     /**
      * Records a channel message. This will be invoked if we are red and
      * get a message that is not a marker.
+     *
      * @param clientMessage Message that client has sent
      */
     public void addChannelMessage(Message clientMessage) {

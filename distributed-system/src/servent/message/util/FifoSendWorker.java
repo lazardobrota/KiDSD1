@@ -53,7 +53,7 @@ public class FifoSendWorker implements Runnable, Cancellable {
                 Socket sendSocket;
 
                 synchronized (AppConfig.colorLock) {
-                    if (!AppConfig.isWhite.get() && messageToSend.getMessageType() != MessageType.SNAPSHOT_REQUEST) {
+                    if (!AppConfig.isWhite.get() && (messageToSend.getMessageType() != MessageType.SNAPSHOT_REQUEST && messageToSend.getMessageType() != MessageType.SNAPSHOT_RESUME)) {
                         MessageUtil.pendingMessages.get(neighbor).put(messageToSend);
                         continue;
                     }

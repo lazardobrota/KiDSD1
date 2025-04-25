@@ -1,6 +1,7 @@
 package servent.handler.snapshot;
 
 import app.AppConfig;
+import app.snapshot_bitcake.CCBitcakeManager;
 import app.snapshot_bitcake.SnapshotCollector;
 import servent.handler.MessageHandler;
 import servent.message.CCAckMessage;
@@ -10,10 +11,12 @@ import servent.message.MessageType;
 public class CCAckHandler implements MessageHandler {
 
     private final Message clientMessage;
+    private final CCBitcakeManager bitcakeManager;
     private final SnapshotCollector snapshotCollector;
 
     public CCAckHandler(Message clientMessage, SnapshotCollector snapshotCollector) {
         this.clientMessage = clientMessage;
+        this.bitcakeManager = (CCBitcakeManager)snapshotCollector.getBitcakeManager();
         this.snapshotCollector = snapshotCollector;
     }
 
@@ -24,7 +27,10 @@ public class CCAckHandler implements MessageHandler {
             return;
         }
 
-        CCAckMessage ackMessage = (CCAckMessage)clientMessage;
-        snapshotCollector.addCCSnapshotInfo(ackMessage.getOriginalSenderInfo().getId(), ackMessage.getCCSnapshotResult());
+        CCAckMessage clTellMessage = (CCAckMessage)clientMessage;
+
+        snapshotCollector.addCCSnapshotInfo(
+                clTellMessage.getOriginalSenderInfo().getId(),
+                clTellMessage.getCCSnapshotResult());
     }
 }

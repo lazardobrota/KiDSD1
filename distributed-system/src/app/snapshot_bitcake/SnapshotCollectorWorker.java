@@ -65,10 +65,11 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
             }
 
             /*
-             * Collecting is done in three stages:
+             * Collecting is done in 3 or 4 stages:
              * 1. Send messages asking for values
              * 2. Wait for all the responses
              * 3. Print result
+             * 4. Tell other to resume
              */
 
             //1 send asks

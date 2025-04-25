@@ -18,6 +18,7 @@ import servent.handler.MessageHandler;
 import servent.handler.NullHandler;
 import servent.handler.TransactionHandler;
 import servent.handler.snapshot.CCAckHandler;
+import servent.handler.snapshot.CCResumeHandler;
 import servent.handler.snapshot.CCSnapshotHandler;
 import servent.message.Message;
 import servent.message.MessageType;
@@ -105,6 +106,9 @@ public class SimpleServantListener implements Runnable, Cancellable {
 						break;
 					case ACK:
 						messageHandler = new CCAckHandler(clientMessage, snapshotCollector);
+						break;
+					case SNAPSHOT_RESUME:
+						messageHandler = new CCResumeHandler(clientMessage, snapshotCollector);
 						break;
 					case POISON:
 						break;
