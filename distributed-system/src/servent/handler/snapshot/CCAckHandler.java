@@ -4,7 +4,7 @@ import app.AppConfig;
 import app.snapshot_bitcake.CCBitcakeManager;
 import app.snapshot_bitcake.SnapshotCollector;
 import servent.handler.MessageHandler;
-import servent.message.CCAckMessage;
+import servent.message.snapshot.CCAckMessage;
 import servent.message.Message;
 import servent.message.MessageType;
 

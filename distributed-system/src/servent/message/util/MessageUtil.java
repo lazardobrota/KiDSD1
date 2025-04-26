@@ -73,7 +73,7 @@ public class MessageUtil {
     public static void sendMessage(Message message) {
         if (AppConfig.IS_FIFO) {
             try {
-                if (message.getMessageType() == MessageType.SNAPSHOT_REQUEST || message.getMessageType() == MessageType.SNAPSHOT_RESUME) {
+                if (message.getMessageType() != MessageType.TRANSACTION && message.getMessageType() != MessageType.POISON) {
                     pendingSnapshots.get(message.getReceiverInfo().getId()).put(message);
                 } else {
                     pendingMessages.get(message.getReceiverInfo().getId()).put(message);

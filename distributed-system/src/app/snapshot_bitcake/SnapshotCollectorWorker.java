@@ -87,7 +87,7 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
             while (waiting) {
                 switch (snapshotType) {
                     case COORDINATED_CHECKPOINTING:
-                        if (collectedCCValues.size() == AppConfig.myServentInfo.getNeighbors().size())
+                        if (collectedCCValues.size() == AppConfig.getServentCount())
                             waiting = false;
                         break;
                     case NONE:
@@ -143,16 +143,18 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
                     }
 
                     AppConfig.timestampedStandardPrint("System bitcake count: " + sum);
-
                     collectedCCValues.clear(); //reset for next invocation
                     break;
                 case NONE:
                     //Shouldn't be able to come here. See constructor.
                     break;
             }
+
+            switch (snapshotType) {
+                case COORDINATED_CHECKPOINTING -> ((CCBitcakeManager) bitcakeManager).handleResume(AppConfig.myServentInfo.getId());
+            }
             collecting.set(false);
         }
-
     }
 
     @Override

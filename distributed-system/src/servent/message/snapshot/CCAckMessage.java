@@ -1,9 +1,11 @@
-package servent.message;
+package servent.message.snapshot;
 
 import app.ServentInfo;
 import app.snapshot_bitcake.result.CCSnapshotResult;
+import servent.message.BasicMessage;
+import servent.message.MessageType;
 
-public class CCAckMessage extends BasicMessage{
+public class CCAckMessage extends BasicMessage {
 
     private final CCSnapshotResult ccSnapshotResult;
 

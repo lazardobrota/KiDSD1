@@ -1,6 +1,8 @@
-package servent.message;
+package servent.message.snapshot;
 
 import app.ServentInfo;
+import servent.message.BasicMessage;
+import servent.message.MessageType;
 
 public class CCSnapshotMessage extends BasicMessage {
 

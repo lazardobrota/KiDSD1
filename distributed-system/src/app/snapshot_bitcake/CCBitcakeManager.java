@@ -3,6 +3,9 @@ package app.snapshot_bitcake;
 import app.AppConfig;
 import app.snapshot_bitcake.result.CCSnapshotResult;
 import servent.message.*;
+import servent.message.snapshot.CCAckMessage;
+import servent.message.snapshot.CCResumeMessage;
+import servent.message.snapshot.CCSnapshotMessage;
 import servent.message.util.MessageUtil;
 
 import java.util.ArrayList;
@@ -95,7 +98,6 @@ public class CCBitcakeManager implements BitcakeManager {
 
                 if (AppConfig.myServentInfo.getId() == collectorId) {
                     snapshotCollector.addCCSnapshotInfo(collectorId, snapshotResult);
-                    handleResume(collectorId);
                 } else {
                     Message ccAckMessage = new CCAckMessage(
                             AppConfig.myServentInfo, AppConfig.getInfoById(collectorId),
@@ -106,8 +108,6 @@ public class CCBitcakeManager implements BitcakeManager {
 
                 recordedBitcakeAmount = 0;
                 allChannelTransactions.clear();
-//                AppConfig.timestampedStandardPrint("Going white");
-//                AppConfig.isWhite.set(true);
             }
         }
     }
