@@ -12,7 +12,7 @@ import servent.message.util.MessageUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServentMainTest2 {
+public class ServentMainTest0 {
 
     public static void main(String[] args) {
 
@@ -20,10 +20,10 @@ public class ServentMainTest2 {
         int portNumber = -1;
 
         String serventListFile = "snapshot-primer/servent_list.test.properties";
-        AppConfig.readConfig(serventListFile);
+		AppConfig.readConfig(serventListFile);
 
         try {
-            serventId = 2;
+			serventId = 0;
         } catch (NumberFormatException e) {
             AppConfig.timestampedErrorPrint("Second argument should be an int. Exiting...");
             System.exit(0);

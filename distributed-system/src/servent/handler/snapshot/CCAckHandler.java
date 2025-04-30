@@ -1,12 +1,19 @@
 package servent.handler.snapshot;
 
 import app.AppConfig;
+import app.ServentInfo;
 import app.snapshot_bitcake.CCBitcakeManager;
 import app.snapshot_bitcake.SnapshotCollector;
+import app.snapshot_bitcake.result.CCSnapshotResult;
 import servent.handler.MessageHandler;
 import servent.message.snapshot.CCAckMessage;
 import servent.message.Message;
 import servent.message.MessageType;
+import servent.message.util.MessageUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class CCAckHandler implements MessageHandler {
 
@@ -16,7 +23,7 @@ public class CCAckHandler implements MessageHandler {
 
     public CCAckHandler(Message clientMessage, SnapshotCollector snapshotCollector) {
         this.clientMessage = clientMessage;
-        this.bitcakeManager = (CCBitcakeManager)snapshotCollector.getBitcakeManager();
+        this.bitcakeManager = (CCBitcakeManager) snapshotCollector.getBitcakeManager();
         this.snapshotCollector = snapshotCollector;
     }
 
@@ -27,10 +34,18 @@ public class CCAckHandler implements MessageHandler {
             return;
         }
 
-        CCAckMessage clTellMessage = (CCAckMessage)clientMessage;
+        CCAckMessage ccTellMessage = (CCAckMessage) clientMessage;
+        int collectorId = ccTellMessage.getRoute().getFirst().getId();
+        if (AppConfig.myServentInfo.getId() == collectorId) {
+            snapshotCollector.addCCSnapshotInfo(ccTellMessage.getCcSnapshotResult().getServantId(),
+                    ccTellMessage.getCcSnapshotResult());
+        } else {
+            List<ServentInfo> updatedRoute = new ArrayList<>(ccTellMessage.getRoute());
+            updatedRoute.removeLast();
 
-        snapshotCollector.addCCSnapshotInfo(
-                clTellMessage.getOriginalSenderInfo().getId(),
-                clTellMessage.getCCSnapshotResult());
+            Message ccFowardMessage = new CCAckMessage(AppConfig.myServentInfo, updatedRoute.getLast(), collectorId, updatedRoute, ccTellMessage.getCcSnapshotResult());
+            MessageUtil.sendMessage(ccFowardMessage);
+        }
+
     }
 }

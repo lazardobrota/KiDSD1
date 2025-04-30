@@ -5,17 +5,19 @@ import app.snapshot_bitcake.result.CCSnapshotResult;
 import servent.message.BasicMessage;
 import servent.message.MessageType;
 
-public class CCAckMessage extends BasicMessage {
+import java.util.List;
+import java.util.Map;
 
+public class CCAckMessage extends BasicMessage {
     private final CCSnapshotResult ccSnapshotResult;
 
-    public CCAckMessage(ServentInfo sender, ServentInfo receiver, CCSnapshotResult clSnapshotResult) {
-        super(MessageType.ACK, sender, receiver);
+    public CCAckMessage(ServentInfo sender, ServentInfo receiver, int collectorId, List<ServentInfo> routeList, CCSnapshotResult clSnapshotResult) {
+        super(MessageType.ACK, sender, receiver, routeList, String.valueOf(collectorId));
 
         this.ccSnapshotResult = clSnapshotResult;
     }
 
-    public CCSnapshotResult getCCSnapshotResult() {
+    public CCSnapshotResult getCcSnapshotResult() {
         return ccSnapshotResult;
     }
 }

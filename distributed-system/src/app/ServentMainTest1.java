@@ -20,10 +20,10 @@ public class ServentMainTest1 {
         int portNumber = -1;
 
         String serventListFile = "snapshot-primer/servent_list.test.properties";
-		AppConfig.readConfig(serventListFile);
+        AppConfig.readConfig(serventListFile);
 
         try {
-			serventId = 0;
+            serventId = 1;
         } catch (NumberFormatException e) {
             AppConfig.timestampedErrorPrint("Second argument should be an int. Exiting...");
             System.exit(0);

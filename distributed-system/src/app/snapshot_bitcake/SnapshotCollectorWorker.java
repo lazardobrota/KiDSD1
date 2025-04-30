@@ -75,7 +75,7 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
             //1 send asks
             switch (snapshotType) {
                 case COORDINATED_CHECKPOINTING:
-                    ((CCBitcakeManager) bitcakeManager).snapshotEvent(AppConfig.myServentInfo.getId());
+                    ((CCBitcakeManager) bitcakeManager).startSnapshotEvent(AppConfig.myServentInfo.getId());
                     break;
                 case NONE:
                     //Shouldn't be able to come here. See constructor.

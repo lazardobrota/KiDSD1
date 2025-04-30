@@ -1,6 +1,7 @@
 package app.snapshot_bitcake;
 
 import app.AppConfig;
+import app.ServentInfo;
 import app.snapshot_bitcake.result.CCSnapshotResult;
 import servent.message.*;
 import servent.message.snapshot.CCAckMessage;
@@ -38,6 +39,7 @@ public class CCBitcakeManager implements BitcakeManager {
     private final Map<Integer, Boolean> closedChannels = new ConcurrentHashMap<>();
     private final Map<String, List<Integer>> allChannelTransactions = new ConcurrentHashMap<>();
     private final Object allChannelTransactionsLock = new Object();
+    private List<ServentInfo> sendBackRoute = new ArrayList<>();
 
     /**
      * This is invoked when we are white and get a marker. Basically,
@@ -52,7 +54,7 @@ public class CCBitcakeManager implements BitcakeManager {
      *
      * @param collectorId - id of collector node, to be put into marker messages for others.
      */
-    public void snapshotEvent(int collectorId) {
+    public void startSnapshotEvent(int collectorId) {
         synchronized (AppConfig.colorLock) {
             AppConfig.timestampedStandardPrint("Going red");
             AppConfig.isWhite.set(false);
@@ -60,8 +62,32 @@ public class CCBitcakeManager implements BitcakeManager {
 
             for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
                 closedChannels.put(neighbor, false);
-                Message ccMarker = new CCSnapshotMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor), collectorId);
-                MessageUtil.sendMessage(ccMarker);
+                Message ccRequestSnapshot = new CCSnapshotMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor), List.of(AppConfig.myServentInfo), collectorId);
+                MessageUtil.sendMessage(ccRequestSnapshot);
+                try {
+                    /**
+                     * This sleep is here to artificially produce some white node -> red node messages
+                     */
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void snapshotEvent(int collectorId, Message clientMessage) {
+        synchronized (AppConfig.colorLock) {
+            AppConfig.timestampedStandardPrint("Going red");
+            AppConfig.isWhite.set(false);
+            recordedBitcakeAmount = getCurrentBitcakeAmount();
+            List<ServentInfo> updatedRoute = new ArrayList<>(clientMessage.getRoute());
+            updatedRoute.add(AppConfig.myServentInfo);
+
+            for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
+                closedChannels.put(neighbor, false);
+                Message ccRequestSnapshot = new CCSnapshotMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor), updatedRoute, collectorId);
+                MessageUtil.sendMessage(ccRequestSnapshot);
                 try {
                     /**
                      * This sleep is here to artificially produce some white node -> red node messages
@@ -87,7 +113,8 @@ public class CCBitcakeManager implements BitcakeManager {
             int collectorId = Integer.parseInt(clientMessage.getMessageText());
 
             if (AppConfig.isWhite.get()) {
-                snapshotEvent(collectorId);
+                snapshotEvent(collectorId, clientMessage);
+                sendBackRoute = clientMessage.getRoute();
             }
 
             closedChannels.put(clientMessage.getOriginalSenderInfo().getId(), true);
@@ -100,7 +127,7 @@ public class CCBitcakeManager implements BitcakeManager {
                     snapshotCollector.addCCSnapshotInfo(collectorId, snapshotResult);
                 } else {
                     Message ccAckMessage = new CCAckMessage(
-                            AppConfig.myServentInfo, AppConfig.getInfoById(collectorId),
+                            AppConfig.myServentInfo, sendBackRoute.getLast(), collectorId, sendBackRoute,
                             snapshotResult);
 
                     MessageUtil.sendMessage(ccAckMessage);
@@ -108,6 +135,7 @@ public class CCBitcakeManager implements BitcakeManager {
 
                 recordedBitcakeAmount = 0;
                 allChannelTransactions.clear();
+                sendBackRoute = new ArrayList<>();
             }
         }
     }
@@ -149,15 +177,12 @@ public class CCBitcakeManager implements BitcakeManager {
         if (AppConfig.isWhite.get()) {
             return false;
         }
-
         AppConfig.timestampedStandardPrint(closedChannels.toString());
-
         for (Map.Entry<Integer, Boolean> closedChannel : closedChannels.entrySet()) {
             if (!closedChannel.getValue()) {
                 return false;
             }
         }
-
         return true;
     }
 
