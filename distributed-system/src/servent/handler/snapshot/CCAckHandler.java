@@ -4,7 +4,6 @@ import app.AppConfig;
 import app.ServentInfo;
 import app.snapshot_bitcake.CCBitcakeManager;
 import app.snapshot_bitcake.SnapshotCollector;
-import app.snapshot_bitcake.result.CCSnapshotResult;
 import servent.handler.MessageHandler;
 import servent.message.snapshot.CCAckMessage;
 import servent.message.Message;
@@ -13,7 +12,6 @@ import servent.message.util.MessageUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class CCAckHandler implements MessageHandler {
 
@@ -29,7 +27,7 @@ public class CCAckHandler implements MessageHandler {
 
     @Override
     public void run() {
-        if (clientMessage.getMessageType() != MessageType.ACK) {
+        if (clientMessage.getMessageType() != MessageType.SNAPSHOT_ACK) {
             AppConfig.timestampedErrorPrint("Acknowledge amount handler got: " + clientMessage);
             return;
         }

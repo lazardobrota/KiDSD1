@@ -82,7 +82,7 @@ public class SimpleServantListener implements Runnable, Cancellable {
 				synchronized (AppConfig.colorLock) {
 					if (AppConfig.SNAPSHOT_TYPE == SnapshotType.COORDINATED_CHECKPOINTING) {
 						if (!AppConfig.isWhite.get() &&
-								clientMessage.getMessageType() != MessageType.SNAPSHOT_REQUEST) {
+								clientMessage.getMessageType() == MessageType.TRANSACTION) {
 							CCBitcakeManager ccBitcakeManager =
 									(CCBitcakeManager) snapshotCollector.getBitcakeManager();
 							ccBitcakeManager.addChannelMessage(clientMessage);
@@ -104,7 +104,7 @@ public class SimpleServantListener implements Runnable, Cancellable {
 					case SNAPSHOT_REQUEST:
 						messageHandler = new CCSnapshotHandler(clientMessage, snapshotCollector);
 						break;
-					case ACK:
+					case SNAPSHOT_ACK:
 						messageHandler = new CCAckHandler(clientMessage, snapshotCollector);
 						break;
 					case SNAPSHOT_RESUME:
