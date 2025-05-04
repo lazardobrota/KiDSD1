@@ -15,7 +15,6 @@ import app.snapshot_bitcake.SnapshotType;
 
 /**
  * This class contains all the global application configuration stuff.
- *
  */
 public class AppConfig {
 
@@ -125,23 +124,18 @@ public class AppConfig {
         if (snapshotType == null) {
             snapshotType = "none";
         }
-        switch (snapshotType) {
-            case "naive":
-                SNAPSHOT_TYPE = SnapshotType.NAIVE;
-                break;
-            case "cl":
-                SNAPSHOT_TYPE = SnapshotType.CHANDY_LAMPORT;
-                break;
-            case "ly":
-                SNAPSHOT_TYPE = SnapshotType.LAI_YANG;
-                break;
-            case "cc":
-                SNAPSHOT_TYPE = SnapshotType.COORDINATED_CHECKPOINTING;
-                break;
-            default:
+
+        SNAPSHOT_TYPE = switch (snapshotType) {
+            case "naive" -> SnapshotType.NAIVE;
+            case "cl" -> SnapshotType.CHANDY_LAMPORT;
+            case "ly" -> SnapshotType.LAI_YANG;
+            case "cc" -> SnapshotType.COORDINATED_CHECKPOINTING;
+            case "av" -> SnapshotType.ALAGAR_VENKATESAN;
+            default -> {
                 timestampedErrorPrint("Problem reading snapshot algorithm. Defaulting to NONE.");
-                SNAPSHOT_TYPE = SnapshotType.NONE;
-        }
+                yield SnapshotType.NONE;
+            }
+        };
 
         for (int i = 0; i < serventCount; i++) {
             String portProperty = "servent" + i + ".port";
@@ -185,6 +179,8 @@ public class AppConfig {
             ServentInfo newInfo = new ServentInfo("localhost", i, serventPort, neighborList);
             serventInfoList.add(newInfo);
         }
+
+        CausalBroadcastShared.initializeVectorClock(serventCount);
     }
 
     /**

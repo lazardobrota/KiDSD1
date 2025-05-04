@@ -17,9 +17,7 @@ import app.snapshot_bitcake.SnapshotType;
 import servent.handler.MessageHandler;
 import servent.handler.NullHandler;
 import servent.handler.TransactionHandler;
-import servent.handler.snapshot.CCAckHandler;
-import servent.handler.snapshot.CCResumeHandler;
-import servent.handler.snapshot.CCSnapshotHandler;
+import servent.handler.snapshot.*;
 import servent.message.Message;
 import servent.message.MessageType;
 import servent.message.util.MessageUtil;
@@ -109,6 +107,15 @@ public class SimpleServantListener implements Runnable, Cancellable {
 						break;
 					case SNAPSHOT_RESUME:
 						messageHandler = new CCResumeHandler(clientMessage, snapshotCollector);
+						break;
+					case AV_TOKEN:
+						messageHandler = new AVTokenHandler(clientMessage, snapshotCollector);
+						break;
+					case AV_DONE:
+						messageHandler = new AVDoneHandler(clientMessage, snapshotCollector);
+						break;
+					case AV_TERMINATE:
+						messageHandler = new AVTerminateHandler(clientMessage, snapshotCollector);
 						break;
 					case POISON:
 						break;

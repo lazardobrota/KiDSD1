@@ -1,0 +1,24 @@
+package servent.message.snapshot;
+
+import app.ServentInfo;
+import app.snapshot_bitcake.result.SnapshotResult;
+import servent.message.MessageType;
+
+import java.util.List;
+import java.util.Map;
+
+public class AVDoneCausalMessage extends ACausalMessage {
+
+    private final SnapshotResult snapshotResult;
+
+    public AVDoneCausalMessage(ServentInfo senderInfo, ServentInfo receiverInfo, List<ServentInfo> routes,
+                               String messageText, Map<Integer, Integer> senderVectorClock, SnapshotResult snapshotResult) {
+        super(MessageType.AV_DONE, senderInfo, receiverInfo, routes, messageText, senderVectorClock);
+
+        this.snapshotResult = snapshotResult;
+    }
+
+    public SnapshotResult getSnapshotResult() {
+        return snapshotResult;
+    }
+}

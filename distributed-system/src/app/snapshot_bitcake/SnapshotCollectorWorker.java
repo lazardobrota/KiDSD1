@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import app.AppConfig;
-import app.snapshot_bitcake.result.CCSnapshotResult;
+import app.snapshot_bitcake.result.SnapshotResult;
 
 /**
  * Main snapshot collector class. Has support for Naive, Chandy-Lamport
@@ -21,7 +21,7 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
     private final AtomicBoolean collecting = new AtomicBoolean(false);
 
     private final Map<String, Integer> collectedNaiveValues = new ConcurrentHashMap<>();
-    private final Map<Integer, CCSnapshotResult> collectedCCValues = new ConcurrentHashMap<>();
+    private final Map<Integer, SnapshotResult> collectedCCValues = new ConcurrentHashMap<>();
 
     private final SnapshotType snapshotType;
 
@@ -33,6 +33,9 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
         switch (snapshotType) {
             case COORDINATED_CHECKPOINTING:
                 bitcakeManager = new CCBitcakeManager();
+                break;
+            case ALAGAR_VENKATESAN:
+                bitcakeManager = new AVBitcakeManager();
                 break;
             case NONE:
                 AppConfig.timestampedErrorPrint("Making snapshot collector without specifying type. Exiting...");
@@ -77,6 +80,9 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
                 case COORDINATED_CHECKPOINTING:
                     ((CCBitcakeManager) bitcakeManager).startSnapshotEvent(AppConfig.myServentInfo.getId());
                     break;
+                case ALAGAR_VENKATESAN:
+                    ((AVBitcakeManager) bitcakeManager).startSnapshotEvent(AppConfig.myServentInfo.getId());
+                    break;
                 case NONE:
                     //Shouldn't be able to come here. See constructor.
                     break;
@@ -87,6 +93,7 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
             while (waiting) {
                 switch (snapshotType) {
                     case COORDINATED_CHECKPOINTING:
+                    case ALAGAR_VENKATESAN:
                         if (collectedCCValues.size() == AppConfig.getServentCount())
                             waiting = false;
                         break;
@@ -122,8 +129,9 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
                     collectedNaiveValues.clear(); //reset for next invocation
                     break;
                 case COORDINATED_CHECKPOINTING:
+                case ALAGAR_VENKATESAN:
                     sum = 0;
-                    for (Entry<Integer, CCSnapshotResult> nodeResult : collectedCCValues.entrySet()) {
+                    for (Entry<Integer, SnapshotResult> nodeResult : collectedCCValues.entrySet()) {
                         sum += nodeResult.getValue().getRecordedBitcakeAmount();
                         AppConfig.timestampedStandardPrint(
                                 "Recorded bitcake amount for " + nodeResult.getKey() + " = " + nodeResult.getValue().getRecordedBitcakeAmount());
@@ -152,6 +160,7 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
 
             switch (snapshotType) {
                 case COORDINATED_CHECKPOINTING -> ((CCBitcakeManager) bitcakeManager).handleResume(AppConfig.myServentInfo.getId());
+                case ALAGAR_VENKATESAN -> ((AVBitcakeManager) bitcakeManager).handleTerminate(AppConfig.myServentInfo.getId());
             }
             collecting.set(false);
         }
@@ -163,8 +172,8 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
     }
 
     @Override
-    public void addCCSnapshotInfo(int id, CCSnapshotResult ccSnapshotResult) {
-        collectedCCValues.put(id, ccSnapshotResult);
+    public void addCCSnapshotInfo(int id, SnapshotResult snapshotResult) {
+        collectedCCValues.put(id, snapshotResult);
     }
 
     @Override

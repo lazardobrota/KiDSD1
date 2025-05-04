@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CCSnapshotResult implements Serializable {
+public class SnapshotResult implements Serializable {
 
     private final int servantId;
     private final int recordedBitcakeAmount;
     private final Map<String, List<Integer>> allChannelMessages;
 
-    public CCSnapshotResult(int servantId, int recordedBitcakeAmount, Map<String, List<Integer>> allChannelMessages) {
+    public SnapshotResult(int servantId, int recordedBitcakeAmount, Map<String, List<Integer>> allChannelMessages) {
         this.servantId = servantId;
         this.recordedBitcakeAmount = recordedBitcakeAmount;
         this.allChannelMessages = new ConcurrentHashMap<>(allChannelMessages);

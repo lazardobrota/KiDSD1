@@ -1,12 +1,15 @@
 package app.snapshot_bitcake;
 
 import app.AppConfig;
+import app.CausalBroadcastShared;
 import app.ServentInfo;
 import app.snapshot_bitcake.result.SnapshotResult;
-import servent.message.*;
-import servent.message.snapshot.CCAckMessage;
+import servent.message.Message;
+import servent.message.MessageType;
+import servent.message.snapshot.AVDoneCausalMessage;
+import servent.message.snapshot.AVTerminateCausalMessage;
+import servent.message.snapshot.AVTokenCausalMessage;
 import servent.message.snapshot.CCResumeMessage;
-import servent.message.snapshot.CCSnapshotMessage;
 import servent.message.util.MessageUtil;
 
 import java.util.ArrayList;
@@ -15,7 +18,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class CCBitcakeManager implements BitcakeManager {
+public class AVBitcakeManager implements BitcakeManager {
 
     private final AtomicInteger currentAmount = new AtomicInteger(1000);
 
@@ -59,11 +62,13 @@ public class CCBitcakeManager implements BitcakeManager {
             AppConfig.timestampedStandardPrint("Going red");
             AppConfig.isWhite.set(false);
             recordedBitcakeAmount = getCurrentBitcakeAmount();
+            CausalBroadcastShared.incrementClock(AppConfig.myServentInfo.getId());
 
             for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
                 closedChannels.put(neighbor, false);
-                Message ccRequestSnapshot = new CCSnapshotMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor), List.of(AppConfig.myServentInfo), collectorId);
-                MessageUtil.sendMessage(ccRequestSnapshot);
+                Message avTokenCausalMessage = new AVTokenCausalMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor),
+                        List.of(AppConfig.myServentInfo), String.valueOf(collectorId), CausalBroadcastShared.getVectorClock());
+                MessageUtil.sendMessage(avTokenCausalMessage);
                 try {
                     /**
                      * This sleep is here to artificially produce some white node -> red node messages
@@ -83,11 +88,13 @@ public class CCBitcakeManager implements BitcakeManager {
             recordedBitcakeAmount = getCurrentBitcakeAmount();
             List<ServentInfo> updatedRoute = new ArrayList<>(clientMessage.getRoute());
             updatedRoute.add(AppConfig.myServentInfo);
+            CausalBroadcastShared.incrementClock(AppConfig.myServentInfo.getId());
 
             for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
                 closedChannels.put(neighbor, false);
-                Message ccRequestSnapshot = new CCSnapshotMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor), updatedRoute, collectorId);
-                MessageUtil.sendMessage(ccRequestSnapshot);
+                Message avTokenCausalMessage = new AVTokenCausalMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor),
+                        updatedRoute, String.valueOf(collectorId), CausalBroadcastShared.getVectorClock());
+                MessageUtil.sendMessage(avTokenCausalMessage);
                 try {
                     /**
                      * This sleep is here to artificially produce some white node -> red node messages
@@ -126,11 +133,13 @@ public class CCBitcakeManager implements BitcakeManager {
                 if (AppConfig.myServentInfo.getId() == collectorId) {
                     snapshotCollector.addCCSnapshotInfo(collectorId, snapshotResult);
                 } else {
-                    Message ccAckMessage = new CCAckMessage(
-                            AppConfig.myServentInfo, sendBackRoute.getLast(), collectorId, sendBackRoute,
-                            snapshotResult);
+                    CausalBroadcastShared.incrementClock(AppConfig.myServentInfo.getId());
 
-                    MessageUtil.sendMessage(ccAckMessage);
+                    Message avDoneCausalMessage = new AVDoneCausalMessage(
+                            AppConfig.myServentInfo, sendBackRoute.getLast(), sendBackRoute, String.valueOf(collectorId),
+                            CausalBroadcastShared.getVectorClock(), snapshotResult);
+
+                    MessageUtil.sendMessage(avDoneCausalMessage);
                 }
 
                 recordedBitcakeAmount = 0;
@@ -142,7 +151,7 @@ public class CCBitcakeManager implements BitcakeManager {
 
     //TODO When changing to white node we have white -> red which means in transaction items will be send to AllChannelTransaction
     // so some amount of bitcakes wont be saved since Transaction doesnt look into AllChannelTransaction i think?
-    public void handleResume(int collectorId) {
+    public void handleTerminate(int collectorId) {
         synchronized (AppConfig.colorLock) {
 
             if (AppConfig.isWhite.get())
@@ -151,11 +160,14 @@ public class CCBitcakeManager implements BitcakeManager {
             AppConfig.timestampedStandardPrint("Going white");
             AppConfig.isWhite.set(true);
 
-            AppConfig.timestampedStandardPrint("Telling neighbors to resume");
+            AppConfig.timestampedStandardPrint("Telling neighbors to terminate(resume)");
+            CausalBroadcastShared.incrementClock(AppConfig.myServentInfo.getId());
 
             for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
-                Message ccResume = new CCResumeMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor), collectorId);
-                MessageUtil.sendMessage(ccResume);
+                AVTerminateCausalMessage avTerminateCausalMessage = new AVTerminateCausalMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor),
+                        String.valueOf(collectorId), CausalBroadcastShared.getVectorClock());
+
+                MessageUtil.sendMessage(avTerminateCausalMessage);
                 try {
                     /**
                      * This sleep is here to artificially produce some red node -> white node messages
