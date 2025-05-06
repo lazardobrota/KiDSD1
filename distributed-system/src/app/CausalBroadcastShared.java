@@ -51,6 +51,10 @@ public class CausalBroadcastShared {
         return vectorClock;
     }
 
+    public static Queue<PendingMessage> getPendingMessages() {
+        return pendingMessages;
+    }
+
 //    public static List<Message> getCommitedCausalMessages() {
 //        List<Message> toReturn = new CopyOnWriteArrayList<>(commitedCausalMessageList);
 //
@@ -61,13 +65,14 @@ public class CausalBroadcastShared {
         pendingMessages.add(msg);
     }
 
-    public static void sendMessage(Message newMessage) {
-        AppConfig.timestampedStandardPrint("Committing " + newMessage);
-        MessageUtil.sendMessage(newMessage);
-        incrementClock(newMessage.getOriginalSenderInfo().getId());
+//    public static void sendMessage(Message newMessage) {
+//        AppConfig.timestampedStandardPrint("Committing " + newMessage);
+//        MessageUtil.sendMessage(newMessage);
+//        incrementClock(newMessage.getOriginalSenderInfo().getId());
+//
+//        checkPendingMessages();
+//    }
 
-        checkPendingMessages();
-    }
 
 //    public static void commitCausalMessage(Message newMessage) {
 //        AppConfig.timestampedStandardPrint("Committing " + newMessage);
@@ -87,58 +92,97 @@ public class CausalBroadcastShared {
 
     public static void checkPendingMessages() {
         boolean gotWork = true;
+        boolean updateClock = false;
+        PendingMessage pendingMessage = null;
 
         while (gotWork) {
             gotWork = false;
+            updateClock = false;
 
+            //Find valid pendingMessage
             synchronized (pendingMessagesLock) {
                 Iterator<PendingMessage> iterator = pendingMessages.iterator();
 
                 Map<Integer, Integer> myVectorClock = getVectorClock();
                 while (iterator.hasNext()) {
-                    PendingMessage pendingMessage = iterator.next();
-                    ACausalMessage causalPendingMessage = (ACausalMessage) pendingMessage.getMessage();
+                    pendingMessage = iterator.next();
+                    ACausalMessage causalPendingMessage = pendingMessage.getMessage() != null ?
+                            (ACausalMessage) pendingMessage.getMessage()
+                            : (ACausalMessage) pendingMessage.getSendMessagesList().getFirst();
+
                     int senderId = causalPendingMessage.getOriginalSenderInfo().getId();
 
                     if (AppConfig.isWhite.get()) {
+
                         gotWork = true;
-
-                        AppConfig.timestampedStandardPrint("Committing " + pendingMessage.getMessage());
-                        updateVectorClock(AppConfig.myServentInfo.getId(), causalPendingMessage.getSenderVectorClock());
-                        pendingMessage.getCausalMessageHandler().continueExecution();
-//                        commitedCausalMessageList.add(pendingMessage);
-
+                        updateClock = true;
                         iterator.remove();
-
                         break;
+
                     } else if (!AppConfig.isWhite.get() && (causalPendingMessage.getMessageType() == MessageType.AV_TOKEN ||
                             causalPendingMessage.getMessageType() == MessageType.AV_DONE ||
-                            causalPendingMessage.getMessageType() == MessageType.AV_TERMINATE)) {
-                        //Dont update clock
+                            causalPendingMessage.getMessageType() == MessageType.AV_TERMINATE)) { //Dont update clock
+
                         gotWork = true;
-
-                        AppConfig.timestampedStandardPrint("Committing " + pendingMessage.getMessage());
-                        pendingMessage.getCausalMessageHandler().continueExecution();
-//                        commitedCausalMessageList.add(pendingMessage);
-
+                        updateClock = false;
                         iterator.remove();
-
                         break;
-                    } else if (!AppConfig.isWhite.get() && isMessageInPast(senderId, myVectorClock, causalPendingMessage.getSenderVectorClock())) {
-                        //Update clock
+
+                    } else if (!AppConfig.isWhite.get() && isMessageInPast(senderId, myVectorClock, causalPendingMessage.getSenderVectorClock())) {//Update clock
+
                         gotWork = true;
-
-                        AppConfig.timestampedStandardPrint("Committing " + pendingMessage.getMessage());
-                        updateVectorClock(AppConfig.myServentInfo.getId(), causalPendingMessage.getSenderVectorClock());
-                        pendingMessage.getCausalMessageHandler().continueExecution();
-//                        commitedCausalMessageList.add(pendingMessage);
-
+                        updateClock = true;
                         iterator.remove();
-
                         break;
                     }
                 }
             }
+
+            //PendingMessage converting to Commited
+            if (gotWork) {
+                if (pendingMessage.isSending())
+                    sendingMessage(pendingMessage);
+                else
+                    commitingMessage(pendingMessage, updateClock);
+            }
         }
+    }
+
+    private static void sendingMessage(PendingMessage pendingMessage) {
+
+        incrementClock(AppConfig.myServentInfo.getId());
+
+        if (pendingMessage.getMessage() != null) {
+            AppConfig.timestampedStandardPrint("Committing Send: " + pendingMessage.getMessage());
+
+            MessageUtil.sendMessage(((ACausalMessage) pendingMessage.getMessage()).updateVectorClock(vectorClock));
+            return;
+        }
+
+        for (Message messageToSend : pendingMessage.getSendMessagesList()) {
+            AppConfig.timestampedStandardPrint("Committing Send: " + messageToSend);
+
+            MessageUtil.sendMessage(((ACausalMessage) messageToSend).updateVectorClock(vectorClock));
+
+            try {
+                /**
+                 * This sleep is here to artificially produce some white node -> red node messages
+                 */
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static void commitingMessage(PendingMessage pendingMessage, boolean updateClock) {
+        ACausalMessage causalPendingMessage = (ACausalMessage) pendingMessage.getMessage();
+
+        AppConfig.timestampedStandardPrint("Committing Receive: " + pendingMessage.getMessage());
+
+        if (updateClock)
+            updateVectorClock(AppConfig.myServentInfo.getId(), causalPendingMessage.getSenderVectorClock());
+
+        pendingMessage.getCausalMessageHandler().continueExecution();
     }
 }

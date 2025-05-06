@@ -3,9 +3,11 @@ package servent.message.snapshot;
 import app.ServentInfo;
 import servent.message.BasicMessage;
 import servent.message.MessageType;
+import servent.message.TransactionMessage;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class ACausalMessage extends BasicMessage {
 
@@ -25,10 +27,18 @@ public abstract class ACausalMessage extends BasicMessage {
         this.senderVectorClock = senderVectorClock;
     }
 
+    public ACausalMessage(MessageType type, ServentInfo senderInfo, ServentInfo receiverInfo, String messageText) {
+        super(type, senderInfo, receiverInfo, messageText);
+
+        this.senderVectorClock = new ConcurrentHashMap<>();
+    }
+
 
     public Map<Integer, Integer> getSenderVectorClock() {
         return senderVectorClock;
     }
+
+    public abstract ACausalMessage updateVectorClock(Map<Integer, Integer> updatedVectorClock);
 
     @Override
     public String toString() {

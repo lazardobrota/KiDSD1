@@ -6,15 +6,16 @@ import app.ServentInfo;
 import app.snapshot_bitcake.result.SnapshotResult;
 import servent.message.Message;
 import servent.message.MessageType;
+import servent.message.PendingMessage;
 import servent.message.snapshot.AVDoneCausalMessage;
 import servent.message.snapshot.AVTerminateCausalMessage;
 import servent.message.snapshot.AVTokenCausalMessage;
-import servent.message.snapshot.CCResumeMessage;
 import servent.message.util.MessageUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,7 +41,7 @@ public class AVBitcakeManager implements BitcakeManager {
     public int recordedBitcakeAmount = 0;
 
     private final Map<Integer, Boolean> closedChannels = new ConcurrentHashMap<>();
-    private final Map<String, List<Integer>> allChannelTransactions = new ConcurrentHashMap<>();
+    //    private final Map<String, List<Integer>> allChannelTransactions = new ConcurrentHashMap<>();
     private final Object allChannelTransactionsLock = new Object();
     private List<ServentInfo> sendBackRoute = new ArrayList<>();
 
@@ -62,22 +63,18 @@ public class AVBitcakeManager implements BitcakeManager {
             AppConfig.timestampedStandardPrint("Going red");
             AppConfig.isWhite.set(false);
             recordedBitcakeAmount = getCurrentBitcakeAmount();
-            CausalBroadcastShared.incrementClock(AppConfig.myServentInfo.getId());
+            List<Message> messageList = new ArrayList<>();
 
             for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
                 closedChannels.put(neighbor, false);
                 Message avTokenCausalMessage = new AVTokenCausalMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor),
                         List.of(AppConfig.myServentInfo), String.valueOf(collectorId), CausalBroadcastShared.getVectorClock());
-                MessageUtil.sendMessage(avTokenCausalMessage);
-                try {
-                    /**
-                     * This sleep is here to artificially produce some white node -> red node messages
-                     */
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+
+                messageList.add(avTokenCausalMessage);
             }
+
+            CausalBroadcastShared.addPendingMessage(new PendingMessage(true, messageList, null));
+            CausalBroadcastShared.checkPendingMessages();
         }
     }
 
@@ -88,22 +85,18 @@ public class AVBitcakeManager implements BitcakeManager {
             recordedBitcakeAmount = getCurrentBitcakeAmount();
             List<ServentInfo> updatedRoute = new ArrayList<>(clientMessage.getRoute());
             updatedRoute.add(AppConfig.myServentInfo);
-            CausalBroadcastShared.incrementClock(AppConfig.myServentInfo.getId());
+            List<Message> messageList = new ArrayList<>();
 
             for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
                 closedChannels.put(neighbor, false);
                 Message avTokenCausalMessage = new AVTokenCausalMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor),
                         updatedRoute, String.valueOf(collectorId), CausalBroadcastShared.getVectorClock());
-                MessageUtil.sendMessage(avTokenCausalMessage);
-                try {
-                    /**
-                     * This sleep is here to artificially produce some white node -> red node messages
-                     */
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+
+                messageList.add(avTokenCausalMessage);
             }
+
+            CausalBroadcastShared.addPendingMessage(new PendingMessage(true, messageList, null));
+            CausalBroadcastShared.checkPendingMessages();
         }
     }
 
@@ -128,22 +121,21 @@ public class AVBitcakeManager implements BitcakeManager {
 
             if (isDone()) {
                 SnapshotResult snapshotResult = new SnapshotResult(
-                        AppConfig.myServentInfo.getId(), recordedBitcakeAmount, allChannelTransactions);
+                        AppConfig.myServentInfo.getId(), recordedBitcakeAmount, CalculateChannelMessages(CausalBroadcastShared.getPendingMessages()));
 
                 if (AppConfig.myServentInfo.getId() == collectorId) {
                     snapshotCollector.addCCSnapshotInfo(collectorId, snapshotResult);
                 } else {
-                    CausalBroadcastShared.incrementClock(AppConfig.myServentInfo.getId());
-
                     Message avDoneCausalMessage = new AVDoneCausalMessage(
                             AppConfig.myServentInfo, sendBackRoute.getLast(), sendBackRoute, String.valueOf(collectorId),
                             CausalBroadcastShared.getVectorClock(), snapshotResult);
 
-                    MessageUtil.sendMessage(avDoneCausalMessage);
+                    CausalBroadcastShared.addPendingMessage(new PendingMessage(true, avDoneCausalMessage, null));
+                    CausalBroadcastShared.checkPendingMessages();
                 }
 
                 recordedBitcakeAmount = 0;
-                allChannelTransactions.clear();
+//                allChannelTransactions.clear();
                 sendBackRoute = new ArrayList<>();
             }
         }
@@ -161,22 +153,17 @@ public class AVBitcakeManager implements BitcakeManager {
             AppConfig.isWhite.set(true);
 
             AppConfig.timestampedStandardPrint("Telling neighbors to terminate(resume)");
-            CausalBroadcastShared.incrementClock(AppConfig.myServentInfo.getId());
+            List<Message> messageList = new ArrayList<>();
 
             for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
                 AVTerminateCausalMessage avTerminateCausalMessage = new AVTerminateCausalMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor),
                         String.valueOf(collectorId), CausalBroadcastShared.getVectorClock());
 
-                MessageUtil.sendMessage(avTerminateCausalMessage);
-                try {
-                    /**
-                     * This sleep is here to artificially produce some red node -> white node messages
-                     */
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                messageList.add(avTerminateCausalMessage);
             }
+
+            CausalBroadcastShared.addPendingMessage(new PendingMessage(true, messageList, null));
+            CausalBroadcastShared.checkPendingMessages();
         }
     }
 
@@ -198,21 +185,22 @@ public class AVBitcakeManager implements BitcakeManager {
         return true;
     }
 
-    /**
-     * Records a channel message. This will be invoked if we are red and
-     * get a message that is not a marker.
-     *
-     * @param clientMessage Message that client has sent
-     */
-    public void addChannelMessage(Message clientMessage) {
-        if (clientMessage.getMessageType() == MessageType.TRANSACTION) {
-            synchronized (allChannelTransactionsLock) {
-                String channelName = "channel " + AppConfig.myServentInfo.getId() + "<-" + clientMessage.getOriginalSenderInfo().getId();
+    public Map<String, List<Integer>> CalculateChannelMessages(Queue<PendingMessage> pendingMessages) {
+        Map<String, List<Integer>> allChannelTransactions = new ConcurrentHashMap<>();
+        while (!pendingMessages.isEmpty()) {
+            PendingMessage pendingMessage = pendingMessages.poll();
 
-                List<Integer> channelMessages = allChannelTransactions.getOrDefault(channelName, new ArrayList<>());
-                channelMessages.add(Integer.parseInt(clientMessage.getMessageText()));
-                allChannelTransactions.put(channelName, channelMessages);
+            if (pendingMessage.getMessage().getMessageType() == MessageType.TRANSACTION) {
+                synchronized (allChannelTransactionsLock) {
+                    String channelName = "channel " + AppConfig.myServentInfo.getId() + "<-" + pendingMessage.getMessage().getOriginalSenderInfo().getId();
+
+                    List<Integer> channelMessages = allChannelTransactions.getOrDefault(channelName, new ArrayList<>());
+                    channelMessages.add(Integer.parseInt(pendingMessage.getMessage().getMessageText()));
+                    allChannelTransactions.put(channelName, channelMessages);
+                }
             }
         }
+
+        return allChannelTransactions;
     }
 }

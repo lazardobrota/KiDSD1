@@ -2,13 +2,17 @@ package servent.message;
 
 import app.ServentInfo;
 import app.snapshot_bitcake.BitcakeManager;
+import servent.message.snapshot.ACausalMessage;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Represents a bitcake transaction. We are sending some bitcakes to another node.
  *
  *
  */
-public class TransactionMessage extends BasicMessage {
+public class TransactionMessage extends ACausalMessage {
 
 	private static final long serialVersionUID = -333251402058492901L;
 
@@ -17,6 +21,20 @@ public class TransactionMessage extends BasicMessage {
 	public TransactionMessage(ServentInfo sender, ServentInfo receiver, int amount, BitcakeManager bitcakeManager) {
 		super(MessageType.TRANSACTION, sender, receiver, String.valueOf(amount));
 		this.bitcakeManager = bitcakeManager;
+	}
+
+	public TransactionMessage(ServentInfo sender, ServentInfo receiver, int amount, BitcakeManager bitcakeManager, Map<Integer, Integer> senderVectorClock) {
+		super(MessageType.TRANSACTION, sender, receiver, String.valueOf(amount), senderVectorClock);
+		this.bitcakeManager = bitcakeManager;
+	}
+
+	public TransactionMessage(ServentInfo sender, ServentInfo receiver, String amount, BitcakeManager bitcakeManager, Map<Integer, Integer> senderVectorClock) {
+		super(MessageType.TRANSACTION, sender, receiver, amount, senderVectorClock);
+		this.bitcakeManager = bitcakeManager;
+	}
+
+	public ACausalMessage updateVectorClock(Map<Integer, Integer> updatedVectorClock) {
+		return new TransactionMessage(getOriginalSenderInfo(), getReceiverInfo(), getMessageText(), bitcakeManager, new ConcurrentHashMap<>(updatedVectorClock));
 	}
 	
 	/**

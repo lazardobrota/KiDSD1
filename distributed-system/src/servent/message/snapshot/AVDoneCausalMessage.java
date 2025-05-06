@@ -6,6 +6,7 @@ import servent.message.MessageType;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class AVDoneCausalMessage extends ACausalMessage {
 
@@ -20,5 +21,10 @@ public class AVDoneCausalMessage extends ACausalMessage {
 
     public SnapshotResult getSnapshotResult() {
         return snapshotResult;
+    }
+
+    @Override
+    public ACausalMessage updateVectorClock(Map<Integer, Integer> updatedVectorClock) {
+        return new AVDoneCausalMessage(getOriginalSenderInfo(), getReceiverInfo(), getRoute(), getMessageText(), new ConcurrentHashMap<>(updatedVectorClock), getSnapshotResult());
     }
 }

@@ -1,11 +1,14 @@
 package servent.handler;
 
 import app.AppConfig;
+import app.CausalBroadcastShared;
 import app.snapshot_bitcake.BitcakeManager;
+import app.snapshot_bitcake.SnapshotType;
 import servent.message.Message;
 import servent.message.MessageType;
+import servent.message.PendingMessage;
 
-public class TransactionHandler implements MessageHandler {
+public class TransactionHandler implements CausalMessageHandler {
 
 	private Message clientMessage;
 	private BitcakeManager bitcakeManager;
@@ -17,22 +20,29 @@ public class TransactionHandler implements MessageHandler {
 
 	@Override
 	public void run() {
-		if (clientMessage.getMessageType() == MessageType.TRANSACTION) {
-			String amountString = clientMessage.getMessageText();
-			
-			int amountNumber = 0;
-			try {
-				amountNumber = Integer.parseInt(amountString);
-			} catch (NumberFormatException e) {
-				AppConfig.timestampedErrorPrint("Couldn't parse amount: " + amountString);
-				return;
-			}
-			
-			bitcakeManager.addSomeBitcakes(amountNumber);
+		if (clientMessage.getMessageType() != MessageType.TRANSACTION)
+			AppConfig.timestampedErrorPrint("Transaction handler got: " + clientMessage);
 
+		if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN) {
+			CausalBroadcastShared.addPendingMessage(new PendingMessage(false, clientMessage, this));
+			CausalBroadcastShared.checkPendingMessages();
 		}
 		else
-			AppConfig.timestampedErrorPrint("Transaction handler got: " + clientMessage);
+			continueExecution();
 	}
 
+	@Override
+	public void continueExecution() {
+		String amountString = clientMessage.getMessageText();
+
+		int amountNumber = 0;
+		try {
+			amountNumber = Integer.parseInt(amountString);
+		} catch (NumberFormatException e) {
+			AppConfig.timestampedErrorPrint("Couldn't parse amount: " + amountString);
+			return;
+		}
+
+		bitcakeManager.addSomeBitcakes(amountNumber);
+	}
 }
