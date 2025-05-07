@@ -94,8 +94,9 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
                 switch (snapshotType) {
                     case COORDINATED_CHECKPOINTING:
                     case ALAGAR_VENKATESAN:
-                        if (collectedCCValues.size() == AppConfig.getServentCount())
+                        if (collectedCCValues.size() == AppConfig.getServentCount()) {
                             waiting = false;
+                        }
                         break;
                     case NONE:
                         //Shouldn't be able to come here. See constructor.

@@ -51,7 +51,7 @@ public class AVDoneHandler implements CausalMessageHandler {
             List<ServentInfo> updatedRoute = new ArrayList<>(doneMessage.getRoute());
             updatedRoute.removeLast();
 
-            Message ccFowardMessage = new AVDoneCausalMessage(AppConfig.myServentInfo, updatedRoute.getLast(), updatedRoute, String.valueOf(collectorId),
+            Message ccFowardMessage = new AVDoneCausalMessage(AppConfig.myServentInfo, updatedRoute.getLast(), updatedRoute, doneMessage.getMessageText(),
                     doneMessage.getSenderVectorClock(), doneMessage.getSnapshotResult());
             MessageUtil.sendMessage(ccFowardMessage);
         }

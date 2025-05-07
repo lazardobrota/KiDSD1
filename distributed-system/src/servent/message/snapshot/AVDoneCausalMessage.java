@@ -23,8 +23,4 @@ public class AVDoneCausalMessage extends ACausalMessage {
         return snapshotResult;
     }
 
-    @Override
-    public ACausalMessage updateVectorClock(Map<Integer, Integer> updatedVectorClock) {
-        return new AVDoneCausalMessage(getOriginalSenderInfo(), getReceiverInfo(), getRoute(), getMessageText(), new ConcurrentHashMap<>(updatedVectorClock), getSnapshotResult());
-    }
 }

@@ -10,7 +10,6 @@ import servent.message.PendingMessage;
 import servent.message.snapshot.AVDoneCausalMessage;
 import servent.message.snapshot.AVTerminateCausalMessage;
 import servent.message.snapshot.AVTokenCausalMessage;
-import servent.message.util.MessageUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +61,7 @@ public class AVBitcakeManager implements BitcakeManager {
         synchronized (AppConfig.colorLock) {
             AppConfig.timestampedStandardPrint("Going red");
             AppConfig.isWhite.set(false);
-            recordedBitcakeAmount = getCurrentBitcakeAmount();
+//            recordedBitcakeAmount = getCurrentBitcakeAmount();
             List<Message> messageList = new ArrayList<>();
 
             for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
@@ -82,7 +81,7 @@ public class AVBitcakeManager implements BitcakeManager {
         synchronized (AppConfig.colorLock) {
             AppConfig.timestampedStandardPrint("Going red");
             AppConfig.isWhite.set(false);
-            recordedBitcakeAmount = getCurrentBitcakeAmount();
+//            recordedBitcakeAmount = getCurrentBitcakeAmount();
             List<ServentInfo> updatedRoute = new ArrayList<>(clientMessage.getRoute());
             updatedRoute.add(AppConfig.myServentInfo);
             List<Message> messageList = new ArrayList<>();
@@ -100,6 +99,7 @@ public class AVBitcakeManager implements BitcakeManager {
         }
     }
 
+    //TODO For some reason servent6 doesnt come here
     /**
      * This is invoked whenever we get a marker from another node. We do the following:
      * <ul>
@@ -121,13 +121,13 @@ public class AVBitcakeManager implements BitcakeManager {
 
             if (isDone()) {
                 SnapshotResult snapshotResult = new SnapshotResult(
-                        AppConfig.myServentInfo.getId(), recordedBitcakeAmount, CalculateChannelMessages(CausalBroadcastShared.getPendingMessages()));
+                        AppConfig.myServentInfo.getId(), getCurrentBitcakeAmount(), CalculateChannelMessages(CausalBroadcastShared.getPendingMessages()));
 
                 if (AppConfig.myServentInfo.getId() == collectorId) {
                     snapshotCollector.addCCSnapshotInfo(collectorId, snapshotResult);
                 } else {
                     Message avDoneCausalMessage = new AVDoneCausalMessage(
-                            AppConfig.myServentInfo, sendBackRoute.getLast(), sendBackRoute, String.valueOf(collectorId),
+                            AppConfig.myServentInfo, sendBackRoute.getLast(), sendBackRoute, String.valueOf(AppConfig.myServentInfo.getId()),
                             CausalBroadcastShared.getVectorClock(), snapshotResult);
 
                     CausalBroadcastShared.addPendingMessage(new PendingMessage(true, avDoneCausalMessage, null));

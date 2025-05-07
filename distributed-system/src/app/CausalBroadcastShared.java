@@ -136,6 +136,14 @@ public class CausalBroadcastShared {
                         break;
                     }
                 }
+
+                //PendingMessage converting to Commited
+//                if (gotWork) {
+//                    if (pendingMessage.isSending())
+//                        sendingMessage(pendingMessage);
+//                    else
+//                        commitingMessage(pendingMessage, updateClock);
+//                }
             }
 
             //PendingMessage converting to Commited
@@ -155,14 +163,16 @@ public class CausalBroadcastShared {
         if (pendingMessage.getMessage() != null) {
             AppConfig.timestampedStandardPrint("Committing Send: " + pendingMessage.getMessage());
 
-            MessageUtil.sendMessage(((ACausalMessage) pendingMessage.getMessage()).updateVectorClock(vectorClock));
+            ((ACausalMessage) pendingMessage.getMessage()).setSenderVectorClock(vectorClock);
+            MessageUtil.sendMessage(pendingMessage.getMessage());
             return;
         }
 
         for (Message messageToSend : pendingMessage.getSendMessagesList()) {
             AppConfig.timestampedStandardPrint("Committing Send: " + messageToSend);
 
-            MessageUtil.sendMessage(((ACausalMessage) messageToSend).updateVectorClock(vectorClock));
+            ((ACausalMessage) messageToSend).setSenderVectorClock(vectorClock);
+            MessageUtil.sendMessage(messageToSend);
 
             try {
                 /**

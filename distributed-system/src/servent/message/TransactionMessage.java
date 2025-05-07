@@ -1,5 +1,6 @@
 package servent.message;
 
+import app.AppConfig;
 import app.ServentInfo;
 import app.snapshot_bitcake.BitcakeManager;
 import servent.message.snapshot.ACausalMessage;
@@ -31,10 +32,6 @@ public class TransactionMessage extends ACausalMessage {
 	public TransactionMessage(ServentInfo sender, ServentInfo receiver, String amount, BitcakeManager bitcakeManager, Map<Integer, Integer> senderVectorClock) {
 		super(MessageType.TRANSACTION, sender, receiver, amount, senderVectorClock);
 		this.bitcakeManager = bitcakeManager;
-	}
-
-	public ACausalMessage updateVectorClock(Map<Integer, Integer> updatedVectorClock) {
-		return new TransactionMessage(getOriginalSenderInfo(), getReceiverInfo(), getMessageText(), bitcakeManager, new ConcurrentHashMap<>(updatedVectorClock));
 	}
 	
 	/**

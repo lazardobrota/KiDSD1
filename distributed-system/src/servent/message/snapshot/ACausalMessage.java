@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class ACausalMessage extends BasicMessage {
 
-    private final Map<Integer, Integer> senderVectorClock;
+    private Map<Integer, Integer> senderVectorClock;
 
     public ACausalMessage(MessageType type, ServentInfo senderInfo, ServentInfo receiverInfo, List<ServentInfo> routes, String messageText,
                           Map<Integer, Integer> senderVectorClock) {
@@ -38,7 +38,9 @@ public abstract class ACausalMessage extends BasicMessage {
         return senderVectorClock;
     }
 
-    public abstract ACausalMessage updateVectorClock(Map<Integer, Integer> updatedVectorClock);
+    public void setSenderVectorClock(Map<Integer, Integer> senderVectorClock) {
+        this.senderVectorClock = senderVectorClock;
+    }
 
     @Override
     public String toString() {
