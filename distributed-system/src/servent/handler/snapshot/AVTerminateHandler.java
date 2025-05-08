@@ -26,8 +26,7 @@ public class AVTerminateHandler implements CausalMessageHandler {
             return;
         }
 
-        CausalBroadcastShared.addPendingMessage(new PendingMessage(false, clientMessage, this));
-        CausalBroadcastShared.checkPendingMessages();
+        CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(false, clientMessage, this));
     }
 
     @Override

@@ -14,7 +14,6 @@ import servent.message.snapshot.AVTokenCausalMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -72,8 +71,7 @@ public class AVBitcakeManager implements BitcakeManager {
                 messageList.add(avTokenCausalMessage);
             }
 
-            CausalBroadcastShared.addPendingMessage(new PendingMessage(true, messageList, null));
-            CausalBroadcastShared.checkPendingMessages();
+            CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(true, messageList, null));
         }
     }
 
@@ -94,8 +92,7 @@ public class AVBitcakeManager implements BitcakeManager {
                 messageList.add(avTokenCausalMessage);
             }
 
-            CausalBroadcastShared.addPendingMessage(new PendingMessage(true, messageList, null));
-            CausalBroadcastShared.checkPendingMessages();
+            CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(true, messageList, null));
         }
     }
 
@@ -131,10 +128,10 @@ public class AVBitcakeManager implements BitcakeManager {
                             AppConfig.myServentInfo, sendBackRoute.getLast(), sendBackRoute, String.valueOf(AppConfig.myServentInfo.getId()),
                             CausalBroadcastShared.getVectorClock(), snapshotResult);
 
-                    CausalBroadcastShared.addPendingMessage(new PendingMessage(true, avDoneCausalMessage, null));
-                    CausalBroadcastShared.checkPendingMessages();
+                    CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(true, avDoneCausalMessage, null));
                 }
 
+                addBitcakesFromChannels();
                 recordedBitcakeAmount = 0;
                 allChannelTransactions.clear();
                 sendBackRoute = new ArrayList<>();
@@ -142,8 +139,6 @@ public class AVBitcakeManager implements BitcakeManager {
         }
     }
 
-    //TODO When changing to white node we have white -> red which means in transaction items will be send to AllChannelTransaction
-    // so some amount of bitcakes wont be saved since Transaction doesnt look into AllChannelTransaction i think?
     public void handleTerminate(int collectorId) {
         synchronized (AppConfig.colorLock) {
 
@@ -163,8 +158,7 @@ public class AVBitcakeManager implements BitcakeManager {
                 messageList.add(avTerminateCausalMessage);
             }
 
-            CausalBroadcastShared.addPendingMessage(new PendingMessage(true, messageList, null));
-            CausalBroadcastShared.checkPendingMessages();
+            CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(true, messageList, null));
         }
     }
 
@@ -196,5 +190,13 @@ public class AVBitcakeManager implements BitcakeManager {
                 allChannelTransactions.put(channelName, channelMessages);
             }
         }
+    }
+
+    public void addBitcakesFromChannels() {
+        int sum = 0;
+        for (Map.Entry<String, List<Integer>> channelMessages : allChannelTransactions.entrySet()) {
+            sum += channelMessages.getValue().stream().reduce(0, Integer::sum);
+        }
+        addSomeBitcakes(sum);
     }
 }

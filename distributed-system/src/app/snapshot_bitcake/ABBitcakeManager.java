@@ -5,6 +5,7 @@
 //import app.snapshot_bitcake.result.ABSnapshotResult;
 //import servent.message.Message;
 //import servent.message.snapshot.ABFinishMessage;
+//import servent.message.snapshot.ABTokenMessage;
 //import servent.message.util.MessageUtil;
 //
 //import java.util.Map;
@@ -65,7 +66,7 @@
 //            }
 //
 //            for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
-//                Message clMarker = new AbTokenMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor), collectorId);
+//                Message clMarker = new ABTokenMessage(AppConfig.myServentInfo, AppConfig.getInfoById(neighbor), collectorId);
 //                MessageUtil.sendMessage(clMarker);
 //                try {
 //                    /**

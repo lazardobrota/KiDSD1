@@ -56,8 +56,7 @@ public class TransactionBurstCommand implements CLICommand {
             }
 
             if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN) {
-                CausalBroadcastShared.addPendingMessage(new PendingMessage(true, messages, null));
-                CausalBroadcastShared.checkPendingMessages();
+                CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(true, messages, null));
             }
         }
     }

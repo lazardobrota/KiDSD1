@@ -4,14 +4,12 @@ import app.AppConfig;
 import app.CausalBroadcastShared;
 import app.ServentInfo;
 import app.snapshot_bitcake.AVBitcakeManager;
-import app.snapshot_bitcake.CCBitcakeManager;
 import app.snapshot_bitcake.SnapshotCollector;
 import servent.handler.CausalMessageHandler;
 import servent.message.Message;
 import servent.message.MessageType;
 import servent.message.PendingMessage;
 import servent.message.snapshot.AVDoneCausalMessage;
-import servent.message.snapshot.CCAckMessage;
 import servent.message.util.MessageUtil;
 
 import java.util.ArrayList;
@@ -36,8 +34,7 @@ public class AVDoneHandler implements CausalMessageHandler {
             return;
         }
 
-        CausalBroadcastShared.addPendingMessage(new PendingMessage(false, clientMessage, this));
-        CausalBroadcastShared.checkPendingMessages();
+        CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(false, clientMessage, this));
     }
 
     @Override
@@ -51,9 +48,9 @@ public class AVDoneHandler implements CausalMessageHandler {
             List<ServentInfo> updatedRoute = new ArrayList<>(doneMessage.getRoute());
             updatedRoute.removeLast();
 
-            Message ccFowardMessage = new AVDoneCausalMessage(AppConfig.myServentInfo, updatedRoute.getLast(), updatedRoute, doneMessage.getMessageText(),
+            Message avFowardMessage = new AVDoneCausalMessage(AppConfig.myServentInfo, updatedRoute.getLast(), updatedRoute, doneMessage.getMessageText(),
                     doneMessage.getSenderVectorClock(), doneMessage.getSnapshotResult());
-            MessageUtil.sendMessage(ccFowardMessage);
+            MessageUtil.sendMessage(avFowardMessage);
         }
     }
 }

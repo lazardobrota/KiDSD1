@@ -24,8 +24,7 @@ public class AVTokenHandler implements CausalMessageHandler {
         if (clientMessage.getMessageType() != MessageType.AV_TOKEN)
             return;
 
-        CausalBroadcastShared.addPendingMessage(new PendingMessage(false, clientMessage, this));
-        CausalBroadcastShared.checkPendingMessages();
+        CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(false, clientMessage, this));
     }
 
     @Override

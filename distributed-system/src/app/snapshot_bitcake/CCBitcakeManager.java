@@ -133,6 +133,7 @@ public class CCBitcakeManager implements BitcakeManager {
                     MessageUtil.sendMessage(ccAckMessage);
                 }
 
+                addBitcakesFromChannels();
                 recordedBitcakeAmount = 0;
                 allChannelTransactions.clear();
                 sendBackRoute = new ArrayList<>();
@@ -202,5 +203,13 @@ public class CCBitcakeManager implements BitcakeManager {
                 allChannelTransactions.put(channelName, channelMessages);
             }
         }
+    }
+
+    public void addBitcakesFromChannels() {
+        int sum = 0;
+        for (Map.Entry<String, List<Integer>> channelMessages : allChannelTransactions.entrySet()) {
+            sum += channelMessages.getValue().stream().reduce(0, Integer::sum);
+        }
+        addSomeBitcakes(sum);
     }
 }

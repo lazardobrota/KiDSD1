@@ -25,8 +25,7 @@ public class TransactionHandler implements CausalMessageHandler {
 			AppConfig.timestampedErrorPrint("Transaction handler got: " + clientMessage);
 
 		if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN) {
-			CausalBroadcastShared.addPendingMessage(new PendingMessage(false, clientMessage, this));
-			CausalBroadcastShared.checkPendingMessages();
+			CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(false, clientMessage, this));
 		}
 		else
 			continueExecution();

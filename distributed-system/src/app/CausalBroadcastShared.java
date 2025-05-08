@@ -61,8 +61,9 @@ public class CausalBroadcastShared {
 //        return toReturn;
 //    }
 
-    public static void addPendingMessage(PendingMessage msg) {
+    public static void addPendingMessageAndCheck(PendingMessage msg) {
         pendingMessages.add(msg);
+        checkPendingMessages();
     }
 
 //    public static void sendMessage(Message newMessage) {
