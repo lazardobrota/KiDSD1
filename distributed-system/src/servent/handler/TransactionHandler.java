@@ -2,6 +2,7 @@ package servent.handler;
 
 import app.AppConfig;
 import app.CausalBroadcastShared;
+import app.snapshot_bitcake.AVBitcakeManager;
 import app.snapshot_bitcake.BitcakeManager;
 import app.snapshot_bitcake.SnapshotType;
 import servent.message.Message;
@@ -43,6 +44,9 @@ public class TransactionHandler implements CausalMessageHandler {
 			return;
 		}
 
-		bitcakeManager.addSomeBitcakes(amountNumber);
+		if (AppConfig.isWhite.get())
+			bitcakeManager.addSomeBitcakes(amountNumber);
+		else
+			((AVBitcakeManager)bitcakeManager).addChannelMessage(clientMessage);
 	}
 }

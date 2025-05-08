@@ -142,7 +142,7 @@ public class CausalBroadcastShared {
 //                    if (pendingMessage.isSending())
 //                        sendingMessage(pendingMessage);
 //                    else
-//                        commitingMessage(pendingMessage, updateClock);
+//                        receiveMessage(pendingMessage, updateClock);
 //                }
             }
 
@@ -151,7 +151,7 @@ public class CausalBroadcastShared {
                 if (pendingMessage.isSending())
                     sendingMessage(pendingMessage);
                 else
-                    commitingMessage(pendingMessage, updateClock);
+                    receiveMessage(pendingMessage, updateClock);
             }
         }
     }
@@ -185,7 +185,7 @@ public class CausalBroadcastShared {
         }
     }
 
-    private static void commitingMessage(PendingMessage pendingMessage, boolean updateClock) {
+    private static void receiveMessage(PendingMessage pendingMessage, boolean updateClock) {
         ACausalMessage causalPendingMessage = (ACausalMessage) pendingMessage.getMessage();
 
         AppConfig.timestampedStandardPrint("Committing Receive: " + pendingMessage.getMessage());

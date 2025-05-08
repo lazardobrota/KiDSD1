@@ -33,6 +33,12 @@ public abstract class ACausalMessage extends BasicMessage {
         this.senderVectorClock = new ConcurrentHashMap<>();
     }
 
+    public ACausalMessage(MessageType messageType, ServentInfo sender, ServentInfo receiver, boolean white, List<ServentInfo> routeList, String messageText, int messageId, Map<Integer, Integer> senderVectorClock) {
+        super(messageType, sender, receiver, white, routeList, messageText, messageId);
+
+        this.senderVectorClock = senderVectorClock;
+    }
+
 
     public Map<Integer, Integer> getSenderVectorClock() {
         return senderVectorClock;

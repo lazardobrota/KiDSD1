@@ -1,5 +1,6 @@
 package app.snapshot_bitcake;
 
+import app.snapshot_bitcake.result.ABSnapshotResult;
 import app.snapshot_bitcake.result.SnapshotResult;
 
 /**
@@ -23,6 +24,11 @@ public class NullSnapshotCollector implements SnapshotCollector {
 
 	@Override
 	public void addCCSnapshotInfo(int id, SnapshotResult snapshotResult) {
+
+	}
+
+	@Override
+	public void addABSnapshotInfo(int id, ABSnapshotResult snapshotResult) {
 
 	}
 

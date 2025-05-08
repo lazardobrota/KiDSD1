@@ -40,7 +40,7 @@ public class AVBitcakeManager implements BitcakeManager {
     public int recordedBitcakeAmount = 0;
 
     private final Map<Integer, Boolean> closedChannels = new ConcurrentHashMap<>();
-    //    private final Map<String, List<Integer>> allChannelTransactions = new ConcurrentHashMap<>();
+    private final Map<String, List<Integer>> allChannelTransactions = new ConcurrentHashMap<>();
     private final Object allChannelTransactionsLock = new Object();
     private List<ServentInfo> sendBackRoute = new ArrayList<>();
 
@@ -61,7 +61,7 @@ public class AVBitcakeManager implements BitcakeManager {
         synchronized (AppConfig.colorLock) {
             AppConfig.timestampedStandardPrint("Going red");
             AppConfig.isWhite.set(false);
-//            recordedBitcakeAmount = getCurrentBitcakeAmount();
+            recordedBitcakeAmount = getCurrentBitcakeAmount();
             List<Message> messageList = new ArrayList<>();
 
             for (Integer neighbor : AppConfig.myServentInfo.getNeighbors()) {
@@ -81,7 +81,7 @@ public class AVBitcakeManager implements BitcakeManager {
         synchronized (AppConfig.colorLock) {
             AppConfig.timestampedStandardPrint("Going red");
             AppConfig.isWhite.set(false);
-//            recordedBitcakeAmount = getCurrentBitcakeAmount();
+            recordedBitcakeAmount = getCurrentBitcakeAmount();
             List<ServentInfo> updatedRoute = new ArrayList<>(clientMessage.getRoute());
             updatedRoute.add(AppConfig.myServentInfo);
             List<Message> messageList = new ArrayList<>();
@@ -100,6 +100,7 @@ public class AVBitcakeManager implements BitcakeManager {
     }
 
     //TODO For some reason servent6 doesnt come here
+
     /**
      * This is invoked whenever we get a marker from another node. We do the following:
      * <ul>
@@ -121,7 +122,7 @@ public class AVBitcakeManager implements BitcakeManager {
 
             if (isDone()) {
                 SnapshotResult snapshotResult = new SnapshotResult(
-                        AppConfig.myServentInfo.getId(), getCurrentBitcakeAmount(), CalculateChannelMessages(CausalBroadcastShared.getPendingMessages()));
+                        AppConfig.myServentInfo.getId(), recordedBitcakeAmount, allChannelTransactions);
 
                 if (AppConfig.myServentInfo.getId() == collectorId) {
                     snapshotCollector.addCCSnapshotInfo(collectorId, snapshotResult);
@@ -135,7 +136,7 @@ public class AVBitcakeManager implements BitcakeManager {
                 }
 
                 recordedBitcakeAmount = 0;
-//                allChannelTransactions.clear();
+                allChannelTransactions.clear();
                 sendBackRoute = new ArrayList<>();
             }
         }
@@ -185,22 +186,15 @@ public class AVBitcakeManager implements BitcakeManager {
         return true;
     }
 
-    public Map<String, List<Integer>> CalculateChannelMessages(Queue<PendingMessage> pendingMessages) {
-        Map<String, List<Integer>> allChannelTransactions = new ConcurrentHashMap<>();
-        while (!pendingMessages.isEmpty()) {
-            PendingMessage pendingMessage = pendingMessages.poll();
+    public void addChannelMessage(Message clientMessage) {
+        if (clientMessage.getMessageType() == MessageType.TRANSACTION) {
+            synchronized (allChannelTransactionsLock) {
+                String channelName = "channel " + AppConfig.myServentInfo.getId() + "<-" + clientMessage.getOriginalSenderInfo().getId();
 
-            if (pendingMessage.getMessage().getMessageType() == MessageType.TRANSACTION) {
-                synchronized (allChannelTransactionsLock) {
-                    String channelName = "channel " + AppConfig.myServentInfo.getId() + "<-" + pendingMessage.getMessage().getOriginalSenderInfo().getId();
-
-                    List<Integer> channelMessages = allChannelTransactions.getOrDefault(channelName, new ArrayList<>());
-                    channelMessages.add(Integer.parseInt(pendingMessage.getMessage().getMessageText()));
-                    allChannelTransactions.put(channelName, channelMessages);
-                }
+                List<Integer> channelMessages = allChannelTransactions.getOrDefault(channelName, new ArrayList<>());
+                channelMessages.add(Integer.parseInt(clientMessage.getMessageText()));
+                allChannelTransactions.put(channelName, channelMessages);
             }
         }
-
-        return allChannelTransactions;
     }
 }

@@ -1,6 +1,7 @@
 package app.snapshot_bitcake;
 
 import app.Cancellable;
+import app.snapshot_bitcake.result.ABSnapshotResult;
 import app.snapshot_bitcake.result.SnapshotResult;
 
 /**
@@ -14,6 +15,7 @@ public interface SnapshotCollector extends Runnable, Cancellable {
 
 	void addNaiveSnapshotInfo(String snapshotSubject, int amount);
 	void addCCSnapshotInfo(int id, SnapshotResult snapshotResult);
+	void addABSnapshotInfo(int id, ABSnapshotResult snapshotResult);
 
 	void startCollecting();
 

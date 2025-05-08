@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import app.AppConfig;
+import app.snapshot_bitcake.result.ABSnapshotResult;
 import app.snapshot_bitcake.result.SnapshotResult;
 
 /**
@@ -22,6 +23,7 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
 
     private final Map<String, Integer> collectedNaiveValues = new ConcurrentHashMap<>();
     private final Map<Integer, SnapshotResult> collectedCCValues = new ConcurrentHashMap<>();
+    private final Map<Integer, ABSnapshotResult> collectedABValues = new ConcurrentHashMap<>();
 
     private final SnapshotType snapshotType;
 
@@ -175,6 +177,11 @@ public class SnapshotCollectorWorker implements SnapshotCollector {
     @Override
     public void addCCSnapshotInfo(int id, SnapshotResult snapshotResult) {
         collectedCCValues.put(id, snapshotResult);
+    }
+
+    @Override
+    public void addABSnapshotInfo(int id, ABSnapshotResult snapshotResult) {
+        collectedABValues.put(id, snapshotResult);
     }
 
     @Override
