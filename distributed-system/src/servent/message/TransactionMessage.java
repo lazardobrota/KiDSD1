@@ -2,6 +2,7 @@ package servent.message;
 
 import app.AppConfig;
 import app.ServentInfo;
+import app.snapshot_bitcake.ABBitcakeManager;
 import app.snapshot_bitcake.BitcakeManager;
 import servent.message.snapshot.ACausalMessage;
 
@@ -44,5 +45,10 @@ public class TransactionMessage extends ACausalMessage {
 		int amount = Integer.parseInt(getMessageText());
 
 		bitcakeManager.takeSomeBitcakes(amount);
+
+		if (bitcakeManager instanceof ABBitcakeManager abBitcakeManager) {
+
+			abBitcakeManager.recordGiveTransaction(getReceiverInfo().getId(), amount);
+		}
 	}
 }

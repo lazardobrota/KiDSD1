@@ -48,14 +48,14 @@ public class TransactionBurstCommand implements CLICommand {
                     Message transactionMessage = new TransactionMessage(
                             AppConfig.myServentInfo, neighborInfo, amount, bitcakeManager);
 
-                    if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN)
+                    if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN || AppConfig.SNAPSHOT_TYPE == SnapshotType.ACHARYA_BADRINATH)
                         messages.add(transactionMessage);
                     else
                         MessageUtil.sendMessage(transactionMessage);
                 }
             }
 
-            if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN) {
+            if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN || AppConfig.SNAPSHOT_TYPE == SnapshotType.ACHARYA_BADRINATH) {
                 CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(true, messages, null));
             }
         }

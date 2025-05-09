@@ -48,9 +48,9 @@ public class DelayedMessageSender implements Runnable {
 			 * to override setRedColor() because of this.
 			 */
 			synchronized (AppConfig.colorLock) {
-				if (!AppConfig.isWhite.get()) {
-					messageToSend = messageToSend.setRedColor();
-				}
+//				if (!AppConfig.isWhite.get()) {
+//					messageToSend = messageToSend.setRedColor();
+//				}
 				Socket sendSocket = new Socket(receiverInfo.getIpAddress(), receiverInfo.getListenerPort());
 				
 				ObjectOutputStream oos = new ObjectOutputStream(sendSocket.getOutputStream());

@@ -2,6 +2,7 @@ package servent.handler;
 
 import app.AppConfig;
 import app.CausalBroadcastShared;
+import app.snapshot_bitcake.ABBitcakeManager;
 import app.snapshot_bitcake.AVBitcakeManager;
 import app.snapshot_bitcake.BitcakeManager;
 import app.snapshot_bitcake.SnapshotType;
@@ -24,7 +25,7 @@ public class TransactionHandler implements CausalMessageHandler {
 		if (clientMessage.getMessageType() != MessageType.TRANSACTION)
 			AppConfig.timestampedErrorPrint("Transaction handler got: " + clientMessage);
 
-		if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN) {
+		if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN || AppConfig.SNAPSHOT_TYPE == SnapshotType.ACHARYA_BADRINATH) {
 			CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(false, clientMessage, this));
 		}
 		else
@@ -45,7 +46,14 @@ public class TransactionHandler implements CausalMessageHandler {
 
 		if (AppConfig.isWhite.get())
 			bitcakeManager.addSomeBitcakes(amountNumber);
-		else
+		else if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN)
 			((AVBitcakeManager)bitcakeManager).addChannelMessage(clientMessage);
+		else if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ACHARYA_BADRINATH)
+			bitcakeManager.addSomeBitcakes(amountNumber);
+
+		synchronized (AppConfig.colorLock) {
+			if (bitcakeManager instanceof ABBitcakeManager abBitcakeManager)
+				abBitcakeManager.recordGetTransaction(clientMessage.getOriginalSenderInfo().getId(), amountNumber);
+		}
 	}
 }

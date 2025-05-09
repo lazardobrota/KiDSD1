@@ -6,9 +6,7 @@ import servent.message.PendingMessage;
 import servent.message.snapshot.ACausalMessage;
 import servent.message.util.MessageUtil;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -17,6 +15,10 @@ public class CausalBroadcastShared {
     //    private final static List<Message> commitedCausalMessageList = new CopyOnWriteArrayList<>();
     private final static Queue<PendingMessage> pendingMessages = new ConcurrentLinkedQueue<>();
     private final static Object pendingMessagesLock = new Object();
+    private final static Set<MessageType> messageTypesToIgnoreSnapshot = new HashSet<>(Set.of(
+            MessageType.AV_TOKEN, MessageType.AV_DONE, MessageType.AV_TERMINATE,
+            MessageType.AB_TOKEN, MessageType.AB_ACK, MessageType.AB_RESUME
+    ));
 
     public static void initializeVectorClock(int serventCount) {
         for (int i = 0; i < serventCount; i++) {
@@ -91,6 +93,7 @@ public class CausalBroadcastShared {
         return messageClock.get(senderId) <= myClock.get(senderId);
     }
 
+    //TODO This currently only works if system if fifo, fix this IMPORTANT, FIX, NOW
     public static void checkPendingMessages() {
         boolean gotWork = true;
         boolean updateClock = false;
@@ -120,9 +123,7 @@ public class CausalBroadcastShared {
                         iterator.remove();
                         break;
 
-                    } else if (!AppConfig.isWhite.get() && (causalPendingMessage.getMessageType() == MessageType.AV_TOKEN ||
-                            causalPendingMessage.getMessageType() == MessageType.AV_DONE ||
-                            causalPendingMessage.getMessageType() == MessageType.AV_TERMINATE)) { //Dont update clock
+                    } else if (!AppConfig.isWhite.get() && messageTypesToIgnoreSnapshot.contains(causalPendingMessage.getMessageType())) { //Dont update clock
 
                         gotWork = true;
                         updateClock = false;

@@ -20,6 +20,7 @@ import servent.handler.TransactionHandler;
 import servent.handler.snapshot.*;
 import servent.message.Message;
 import servent.message.MessageType;
+import servent.message.snapshot.ACausalMessage;
 import servent.message.util.MessageUtil;
 
 /**
@@ -90,6 +91,10 @@ public class SimpleServantListener implements Runnable, Cancellable {
 
 				MessageHandler messageHandler = new NullHandler(clientMessage);
 
+				if (clientMessage instanceof ACausalMessage) {
+					int a = 5;
+				}
+
 				/*
 				 * Each message type has it's own handler.
 				 * If we can get away with stateless handlers, we will,
@@ -116,6 +121,15 @@ public class SimpleServantListener implements Runnable, Cancellable {
 						break;
 					case AV_TERMINATE:
 						messageHandler = new AVTerminateHandler(clientMessage, snapshotCollector);
+						break;
+					case AB_TOKEN:
+						messageHandler = new ABTokenHandler(clientMessage, snapshotCollector);
+						break;
+					case AB_ACK:
+						messageHandler = new ABAckHandler(clientMessage, snapshotCollector);
+						break;
+					case AB_RESUME:
+						messageHandler = new ABResumeHandler(clientMessage, snapshotCollector);
 						break;
 					case POISON:
 						break;

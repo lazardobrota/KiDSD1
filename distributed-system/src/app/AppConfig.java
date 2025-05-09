@@ -131,6 +131,7 @@ public class AppConfig {
             case "ly" -> SnapshotType.LAI_YANG;
             case "cc" -> SnapshotType.COORDINATED_CHECKPOINTING;
             case "av" -> SnapshotType.ALAGAR_VENKATESAN;
+            case "ab" -> SnapshotType.ACHARYA_BADRINATH;
             default -> {
                 timestampedErrorPrint("Problem reading snapshot algorithm. Defaulting to NONE.");
                 yield SnapshotType.NONE;
