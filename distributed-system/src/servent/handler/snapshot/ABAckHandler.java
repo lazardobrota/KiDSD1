@@ -10,6 +10,7 @@ import servent.message.Message;
 import servent.message.MessageType;
 import servent.message.PendingMessage;
 import servent.message.snapshot.ABAckMessage;
+import servent.message.snapshot.ACausalMessage;
 import servent.message.util.MessageUtil;
 
 import java.util.ArrayList;
@@ -48,9 +49,12 @@ public class ABAckHandler implements CausalMessageHandler {
             List<ServentInfo> updatedRoute = new ArrayList<>(ackMessage.getRoute());
             updatedRoute.removeLast();
 
-            Message abFowardMessage = new ABAckMessage(AppConfig.myServentInfo, updatedRoute.getLast(), updatedRoute, ackMessage.getMessageText(),
+            ACausalMessage abForwardMessage = new ABAckMessage(AppConfig.myServentInfo, updatedRoute.getLast(), updatedRoute, ackMessage.getMessageText(),
                     ackMessage.getSenderVectorClock(), ackMessage.getAbSnapshotResult());
-            MessageUtil.sendMessage(abFowardMessage);
+
+            int neighborTcp = CausalBroadcastShared.incrementSendAndGet(abForwardMessage.getReceiverInfo().getId());
+            abForwardMessage.setTpcNumber(neighborTcp);
+            MessageUtil.sendMessage(abForwardMessage);
         }
     }
 }
