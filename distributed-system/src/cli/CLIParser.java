@@ -14,6 +14,7 @@ import cli.command.PauseCommand;
 import cli.command.StopCommand;
 import cli.command.TransactionBurstCommand;
 import servent.SimpleServantListener;
+import servent.message.CommitMessageListener;
 import servent.message.util.FifoSendWorker;
 
 /**
@@ -39,14 +40,14 @@ public class CLIParser implements Runnable, Cancellable {
 	
 	private final List<CLICommand> commandList;
 	
-	public CLIParser(SimpleServantListener listener, List<FifoSendWorker> senderWorkers, SnapshotCollector snapshotCollector) {
+	public CLIParser(SimpleServantListener listener, CommitMessageListener commitMessageListener, List<FifoSendWorker> senderWorkers, SnapshotCollector snapshotCollector) {
 		this.commandList = new ArrayList<>();
 		
 		commandList.add(new InfoCommand());
 		commandList.add(new PauseCommand());
 		commandList.add(new TransactionBurstCommand(snapshotCollector.getBitcakeManager()));
 		commandList.add(new BitcakeInfoCommand(snapshotCollector));
-		commandList.add(new StopCommand(this, listener, senderWorkers, snapshotCollector));
+		commandList.add(new StopCommand(this, listener, commitMessageListener, senderWorkers, snapshotCollector));
 	}
 	
 	@Override

@@ -9,6 +9,7 @@ import servent.handler.CausalMessageHandler;
 import servent.message.Message;
 import servent.message.MessageType;
 import servent.message.PendingMessage;
+import servent.message.snapshot.ACausalMessage;
 import servent.message.snapshot.AVDoneCausalMessage;
 import servent.message.util.MessageUtil;
 
@@ -48,9 +49,11 @@ public class AVDoneHandler implements CausalMessageHandler {
             List<ServentInfo> updatedRoute = new ArrayList<>(doneMessage.getRoute());
             updatedRoute.removeLast();
 
-            Message avFowardMessage = new AVDoneCausalMessage(AppConfig.myServentInfo, updatedRoute.getLast(), updatedRoute, doneMessage.getMessageText(),
+            ACausalMessage avForwardMessage = new AVDoneCausalMessage(AppConfig.myServentInfo, updatedRoute.getLast(), updatedRoute, doneMessage.getMessageText(),
                     doneMessage.getSenderVectorClock(), doneMessage.getSnapshotResult());
-            MessageUtil.sendMessage(avFowardMessage);
+            int neighborTcp = CausalBroadcastShared.incrementSendAndGet(avForwardMessage.getReceiverInfo().getId());
+            avForwardMessage.setTpcNumber(neighborTcp);
+            MessageUtil.sendMessage(avForwardMessage);
         }
     }
 }

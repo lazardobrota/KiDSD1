@@ -44,6 +44,7 @@ public class TransactionHandler implements CausalMessageHandler {
 			return;
 		}
 
+
 		if (AppConfig.isWhite.get())
 			bitcakeManager.addSomeBitcakes(amountNumber);
 		else if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN)
@@ -55,5 +56,7 @@ public class TransactionHandler implements CausalMessageHandler {
 			if (bitcakeManager instanceof ABBitcakeManager abBitcakeManager)
 				abBitcakeManager.recordGetTransaction(clientMessage.getOriginalSenderInfo().getId(), amountNumber);
 		}
+
+		AppConfig.timestampedStandardPrint("AAAAAAAAAAA ADD: " + amountNumber + " ---- " + bitcakeManager.getCurrentBitcakeAmount());
 	}
 }

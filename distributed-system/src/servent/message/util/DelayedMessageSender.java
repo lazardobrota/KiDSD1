@@ -59,7 +59,7 @@ public class DelayedMessageSender implements Runnable {
 				
 				sendSocket.close();
 				
-				messageToSend.sendEffect();
+//				messageToSend.sendEffect();
 			}
 		} catch (IOException e) {
 			AppConfig.timestampedErrorPrint("Couldn't send message: " + messageToSend.toString());

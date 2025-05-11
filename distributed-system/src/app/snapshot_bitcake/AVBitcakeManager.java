@@ -96,8 +96,6 @@ public class AVBitcakeManager implements BitcakeManager {
         }
     }
 
-    //TODO For some reason servent6 doesnt come here
-
     /**
      * This is invoked whenever we get a marker from another node. We do the following:
      * <ul>
@@ -124,6 +122,7 @@ public class AVBitcakeManager implements BitcakeManager {
                 if (AppConfig.myServentInfo.getId() == collectorId) {
                     snapshotCollector.addCCSnapshotInfo(collectorId, snapshotResult);
                 } else {
+
                     Message avDoneCausalMessage = new AVDoneCausalMessage(
                             AppConfig.myServentInfo, sendBackRoute.getLast(), sendBackRoute, String.valueOf(AppConfig.myServentInfo.getId()),
                             CausalBroadcastShared.getVectorClock(), snapshotResult);

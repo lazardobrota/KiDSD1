@@ -16,8 +16,10 @@ import servent.message.util.MessageUtil;
 
 public class TransactionBurstCommand implements CLICommand {
 
-    private static final int TRANSACTION_COUNT = 5;
-    private static final int BURST_WORKERS = 10;
+//    private static final int TRANSACTION_COUNT = 5;
+    private static final int TRANSACTION_COUNT = 20;
+//    private static final int BURST_WORKERS = 10;
+    private static final int BURST_WORKERS = 1;
     private static final int MAX_TRANSFER_AMOUNT = 10;
 
     private final BitcakeManager bitcakeManager;
@@ -32,9 +34,8 @@ public class TransactionBurstCommand implements CLICommand {
         public void run() {
             ThreadLocalRandom rand = ThreadLocalRandom.current();
 
-            List<Message> messages = new ArrayList<>();
-
             for (int i = 0; i < TRANSACTION_COUNT; i++) {
+                List<Message> messages = new ArrayList<>();
                 for (int neighbor : AppConfig.myServentInfo.getNeighbors()) {
                     ServentInfo neighborInfo = AppConfig.getInfoById(neighbor);
 
@@ -49,14 +50,24 @@ public class TransactionBurstCommand implements CLICommand {
                             AppConfig.myServentInfo, neighborInfo, amount, bitcakeManager);
 
                     if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN || AppConfig.SNAPSHOT_TYPE == SnapshotType.ACHARYA_BADRINATH)
-                        messages.add(transactionMessage);
+                        CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(true, transactionMessage, null));
+//                        messages.add(transactionMessage);
                     else
                         MessageUtil.sendMessage(transactionMessage);
-                }
-            }
 
-            if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN || AppConfig.SNAPSHOT_TYPE == SnapshotType.ACHARYA_BADRINATH) {
-                CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(true, messages, null));
+                    try {
+                        /**
+                         * This sleep is here to artificially produce some white node -> red node messages
+                         */
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+//                if (AppConfig.SNAPSHOT_TYPE == SnapshotType.ALAGAR_VENKATESAN || AppConfig.SNAPSHOT_TYPE == SnapshotType.ACHARYA_BADRINATH) {
+//                    CausalBroadcastShared.addPendingMessageAndCheck(new PendingMessage(true, messages, null));
+//                }
             }
         }
     }

@@ -1,10 +1,12 @@
 package servent.message.snapshot;
 
+import app.CausalBroadcastShared;
 import app.ServentInfo;
 import servent.message.BasicMessage;
 import servent.message.MessageType;
 import servent.message.TransactionMessage;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class ACausalMessage extends BasicMessage {
 
     private Map<Integer, Integer> senderVectorClock;
+    private int tpcNumber;
 
     public ACausalMessage(MessageType type, ServentInfo senderInfo, ServentInfo receiverInfo, List<ServentInfo> routes, String messageText,
                           Map<Integer, Integer> senderVectorClock) {
@@ -44,15 +47,23 @@ public abstract class ACausalMessage extends BasicMessage {
         return senderVectorClock;
     }
 
+    public int getTpcNumber() {
+        return tpcNumber;
+    }
+
     public void setSenderVectorClock(Map<Integer, Integer> senderVectorClock) {
         this.senderVectorClock = senderVectorClock;
+    }
+
+    public void setTpcNumber(int tpcNumber) {
+        this.tpcNumber = tpcNumber;
     }
 
     @Override
     public String toString() {
         return "[" + getOriginalSenderInfo().getId() + "|" + getMessageId() + "|" +
                 getMessageText() + "|" + getMessageType() + "|" + getRoute().stream().map(ServentInfo::getId).toList() + "|" +
-                senderVectorClock.toString() + "|" +
+                senderVectorClock.toString() + "|" + "Send tpc num: " + tpcNumber + "|" +
                 getReceiverInfo().getId() + "]";
     }
 }

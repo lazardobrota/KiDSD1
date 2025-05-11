@@ -141,8 +141,6 @@ public class CCBitcakeManager implements BitcakeManager {
         }
     }
 
-    //TODO When changing to white node we have white -> red which means in transaction items will be send to AllChannelTransaction
-    // so some amount of bitcakes wont be saved since Transaction doesnt look into AllChannelTransaction i think?
     public void handleResume(int collectorId) {
         synchronized (AppConfig.colorLock) {
 

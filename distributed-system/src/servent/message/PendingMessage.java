@@ -11,6 +11,7 @@ public class PendingMessage {
     private final Message message;
     private final List<Message> sendMessagesList;
     private final CausalMessageHandler causalMessageHandler;
+    private boolean updateVectorClock = false;
 
     public PendingMessage(boolean isSending, Message message, CausalMessageHandler causalMessageHandler) {
         this.isSending = isSending;
@@ -34,6 +35,14 @@ public class PendingMessage {
 
     public Message getMessage() {
         return message;
+    }
+
+    public boolean isUpdateVectorClock() {
+        return updateVectorClock;
+    }
+
+    public void setUpdateVectorClock(boolean updateVectorClock) {
+        this.updateVectorClock = updateVectorClock;
     }
 
     public List<Message> getSendMessagesList() {

@@ -181,7 +181,7 @@ public class AppConfig {
             serventInfoList.add(newInfo);
         }
 
-        CausalBroadcastShared.initializeVectorClock(serventCount);
+        CausalBroadcastShared.initializeVectorClocks(serventCount);
     }
 
     /**

@@ -6,6 +6,7 @@ import app.snapshot_bitcake.SnapshotCollectorWorker;
 import app.snapshot_bitcake.SnapshotType;
 import cli.CLIParser;
 import servent.SimpleServantListener;
+import servent.message.CommitMessageListener;
 import servent.message.util.FifoSendWorker;
 import servent.message.util.MessageUtil;
 
@@ -35,6 +36,7 @@ public class ServentMainTest1 {
         }
 
         AppConfig.myServentInfo = AppConfig.getInfoById(serventId);
+        CausalBroadcastShared.initializeNeighborTcp();
 
         try {
             portNumber = AppConfig.myServentInfo.getListenerPort();
@@ -61,6 +63,10 @@ public class ServentMainTest1 {
         Thread snapshotCollectorThread = new Thread(snapshotCollector);
         snapshotCollectorThread.start();
 
+        CommitMessageListener commitMessageListener = new CommitMessageListener();
+        Thread commitMessageListenerThread = new Thread(commitMessageListener);
+        commitMessageListenerThread.start();
+
         SimpleServantListener simpleListener = new SimpleServantListener(snapshotCollector);
         Thread listenerThread = new Thread(simpleListener);
         listenerThread.start();
@@ -79,7 +85,7 @@ public class ServentMainTest1 {
 
         }
 
-        CLIParser cliParser = new CLIParser(simpleListener, senderWorkers, snapshotCollector);
+        CLIParser cliParser = new CLIParser(simpleListener, commitMessageListener, senderWorkers, snapshotCollector);
         Thread cliThread = new Thread(cliParser);
         cliThread.start();
 

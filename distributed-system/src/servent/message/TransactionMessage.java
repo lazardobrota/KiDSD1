@@ -43,12 +43,13 @@ public class TransactionMessage extends ACausalMessage {
 	@Override
 	public void sendEffect() {
 		int amount = Integer.parseInt(getMessageText());
-
 		bitcakeManager.takeSomeBitcakes(amount);
 
 		if (bitcakeManager instanceof ABBitcakeManager abBitcakeManager) {
 
 			abBitcakeManager.recordGiveTransaction(getReceiverInfo().getId(), amount);
 		}
+
+		AppConfig.timestampedStandardPrint("BBBBBBBBBBBBBBB REMOVE: " + amount + " ---- " + bitcakeManager.getCurrentBitcakeAmount());
 	}
 }
