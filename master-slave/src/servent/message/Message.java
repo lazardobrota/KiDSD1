@@ -18,7 +18,6 @@ import java.io.Serializable;
  * 	<li>Is immutable</li>
  * 	<li>Equality and hashability based on message id and original sender port</li>
  * </ul>
- * @author bmilojkovic
  *
  */
 public interface Message extends Serializable {

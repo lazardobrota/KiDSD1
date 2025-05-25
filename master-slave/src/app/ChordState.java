@@ -4,12 +4,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import cli.ValueTypes;
 import servent.message.AskGetMessage;
 import servent.message.PutMessage;
 import servent.message.WelcomeMessage;
@@ -35,7 +32,6 @@ import servent.message.util.MessageUtil;
  *   <li><code>putValue(int key, int value)</code> - stores the value locally or sends it on further in the system.</li>
  *   <li><code>getValue(int key)</code> - gets the value locally, or sends a message to get it from somewhere else.</li>
  * </ul>
- * @author bmilojkovic
  *
  */
 public class ChordState {
@@ -44,8 +40,18 @@ public class ChordState {
 	public static int chordHash(int value) {
 		return 61 * value % CHORD_SIZE;
 	}
+
+	public static int chordHash(String value) {
+		int hash = 0;
+		for (char c : value.toCharArray()) {
+			hash = (61 * hash + c) % CHORD_SIZE; // Prevents overflow
+		}
+		return hash % CHORD_SIZE;
+	}
 	
 	private int chordLevel; //log_2(CHORD_SIZE)
+
+	private volatile boolean isInitialised = false;
 	
 	private ServentInfo[] successorTable;
 	private ServentInfo predecessorInfo;
@@ -53,8 +59,11 @@ public class ChordState {
 	//we DO NOT use this to send messages, but only to construct the successor table
 	private List<ServentInfo> allNodeInfo;
 	
-	private Map<Integer, Integer> valueMap;
-	
+//	private Map<Integer, Integer> valueMap;
+	private Map<Integer, String> valueMap;
+
+	private Set<Integer> uploadsThroughMe;
+
 	public ChordState() {
 		this.chordLevel = 1;
 		int tmp = CHORD_SIZE;
@@ -74,6 +83,7 @@ public class ChordState {
 		predecessorInfo = null;
 		valueMap = new HashMap<>();
 		allNodeInfo = new ArrayList<>();
+        uploadsThroughMe = new HashSet<>();
 	}
 	
 	/**
@@ -100,6 +110,8 @@ public class ChordState {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		isInitialised = true;
 	}
 	
 	public int getChordLevel() {
@@ -122,12 +134,16 @@ public class ChordState {
 		this.predecessorInfo = newNodeInfo;
 	}
 
-	public Map<Integer, Integer> getValueMap() {
+	public Map<Integer, String> getValueMap() {
 		return valueMap;
 	}
 	
-	public void setValueMap(Map<Integer, Integer> valueMap) {
+	public void setValueMap(Map<Integer, String> valueMap) {
 		this.valueMap = valueMap;
+	}
+
+	public Set<Integer> getUploadsThroughMe() {
+		return uploadsThroughMe;
 	}
 	
 	public boolean isCollision(int chordId) {
@@ -311,7 +327,7 @@ public class ChordState {
 	/**
 	 * The Chord put operation. Stores locally if key is ours, otherwise sends it on.
 	 */
-	public void putValue(int key, int value) {
+	public void putValue(int key, String value) {
 		if (isKeyMine(key)) {
 			valueMap.put(key, value);
 		} else {
@@ -329,12 +345,12 @@ public class ChordState {
 	 *			<li>-2 if we asked someone else</li>
 	 *		   </ul>
 	 */
-	public int getValue(int key) {
+	public String getValue(int key) {
 		if (isKeyMine(key)) {
 			if (valueMap.containsKey(key)) {
 				return valueMap.get(key);
 			} else {
-				return -1;
+				return ValueTypes.EMPTY.toString();
 			}
 		}
 		
@@ -342,7 +358,11 @@ public class ChordState {
 		AskGetMessage agm = new AskGetMessage(AppConfig.myServentInfo.getListenerPort(), nextNode.getListenerPort(), String.valueOf(key));
 		MessageUtil.sendMessage(agm);
 		
-		return -2;
+		return ValueTypes.ASKED_ANOTHER_NODE.toString();
+	}
+
+	public boolean isInitialised() {
+		return isInitialised;
 	}
 
 }

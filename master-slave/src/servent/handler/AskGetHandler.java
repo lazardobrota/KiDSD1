@@ -4,6 +4,7 @@ import java.util.Map;
 
 import app.AppConfig;
 import app.ServentInfo;
+import cli.ValueTypes;
 import servent.message.AskGetMessage;
 import servent.message.Message;
 import servent.message.MessageType;
@@ -24,8 +25,8 @@ public class AskGetHandler implements MessageHandler {
 			try {
 				int key = Integer.parseInt(clientMessage.getMessageText());
 				if (AppConfig.chordState.isKeyMine(key)) {
-					Map<Integer, Integer> valueMap = AppConfig.chordState.getValueMap(); 
-					int value = -1;
+					Map<Integer, String> valueMap = AppConfig.chordState.getValueMap();
+					String value = ValueTypes.EMPTY.toString();
 					
 					if (valueMap.containsKey(key)) {
 						value = valueMap.get(key);

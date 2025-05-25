@@ -5,7 +5,6 @@ import java.io.Serializable;
 /**
  * This is an immutable class that holds all the information for a servent.
  *
- * @author bmilojkovic
  */
 public class ServentInfo implements Serializable {
 

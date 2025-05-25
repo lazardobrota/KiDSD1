@@ -9,7 +9,6 @@ import app.ChordState;
  * A default message implementation. This should cover most situations.
  * If you want to add stuff, remember to think about the modificator methods.
  * If you don't override the modificators, you might drop stuff.
- * @author bmilojkovic
  *
  */
 public class BasicMessage implements Message {

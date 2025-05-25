@@ -8,7 +8,7 @@ import servent.SimpleServentListener;
  * Describes the procedure for starting a single Servent
  *
  */
-public class ServentMain {
+public class ServentMainTest2 {
 
 	/**
 	 * Command line arguments are:
@@ -16,21 +16,16 @@ public class ServentMain {
 	 * 1 - this servent's id
 	 */
 	public static void main(String[] args) {
-		if (args.length != 2) {
-			AppConfig.timestampedErrorPrint("Please provide servent list file and id of this servent.");
+		try {
+			Thread.sleep(22000); //2000 For bootstrap
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
 		}
-		
-		int serventId = -1;
+
+		int serventId = 2;
 		int portNumber = -1;
 		
-		String serventListFile = args[0];
-		
-		try {
-			serventId = Integer.parseInt(args[1]);
-		} catch (NumberFormatException e) {
-			AppConfig.timestampedErrorPrint("Second argument should be an int. Exiting...");
-			System.exit(0);
-		}
+		String serventListFile = "chord/servent_list_test_properties";
 		
 		AppConfig.readConfig(serventListFile, serventId);
 		
@@ -49,7 +44,7 @@ public class ServentMain {
 
 		PongListener pongListener = new PongListener();
 		Thread pongListenerThread = new Thread(pongListener);
-		pongListenerThread.start();
+//		pongListenerThread.start();
 
 		SimpleServentListener simpleListener = new SimpleServentListener(pongListener);
 		Thread listenerThread = new Thread(simpleListener);

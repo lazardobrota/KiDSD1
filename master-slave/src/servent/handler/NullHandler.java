@@ -5,7 +5,6 @@ import servent.message.Message;
 
 /**
  * This will be used if no proper handler is found for the message.
- * @author bmilojkovic
  *
  */
 public class NullHandler implements MessageHandler {

@@ -10,8 +10,7 @@ import servent.message.Message;
 /**
  * This worker sends a message asynchronously. Doing this in a separate thread
  * has the added benefit of being able to delay without blocking main or somesuch.
- * 
- * @author bmilojkovic
+ *
  *
  */
 public class DelayedMessageSender implements Runnable {
@@ -28,7 +27,11 @@ public class DelayedMessageSender implements Runnable {
 		 * It is important to take regular naps for health reasons.
 		 */
 		try {
-			Thread.sleep((long)(Math.random() * 1000) + 500);
+			long delay = (long)(Math.random() * 1000) + 500;
+
+			AppConfig.timestampedStandardPrint("Delay Message by: " + delay + "ms");
+
+			Thread.sleep(delay);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}

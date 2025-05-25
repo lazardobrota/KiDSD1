@@ -44,14 +44,14 @@ public class NewNodeHandler implements MessageHandler {
 				
 				AppConfig.chordState.setPredecessor(newNodeInfo);
 				
-				Map<Integer, Integer> myValues = AppConfig.chordState.getValueMap();
-				Map<Integer, Integer> hisValues = new HashMap<>();
+				Map<Integer, String> myValues = AppConfig.chordState.getValueMap();
+				Map<Integer, String> hisValues = new HashMap<>();
 				
 				int myId = AppConfig.myServentInfo.getChordId();
 				int hisPredId = hisPred.getChordId();
 				int newNodeId = newNodeInfo.getChordId();
 				
-				for (Entry<Integer, Integer> valueEntry : myValues.entrySet()) {
+				for (Entry<Integer, String> valueEntry : myValues.entrySet()) {
 					if (hisPredId == myId) { //i am first and he is second
 						if (myId < newNodeId) {
 							if (valueEntry.getKey() <= newNodeId && valueEntry.getKey() > myId) {

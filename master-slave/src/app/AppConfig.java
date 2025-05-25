@@ -5,12 +5,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Properties;
 
 /**
  * This class contains all the global application configuration stuff.
- * @author bmilojkovic
  *
  */
 public class AppConfig {
@@ -19,16 +20,16 @@ public class AppConfig {
 	 * Convenience access for this servent's information
 	 */
 	public static ServentInfo myServentInfo;
-	
+
+
+	private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+
 	/**
 	 * Print a message to stdout with a timestamp
 	 * @param message message to print
 	 */
 	public static void timestampedStandardPrint(String message) {
-		DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-		Date now = new Date();
-		
-		System.out.println(timeFormat.format(now) + " - " + message);
+		System.out.println(LocalTime.now().format(dateTimeFormatter) + " - " + message);
 	}
 	
 	/**
@@ -36,10 +37,7 @@ public class AppConfig {
 	 * @param message message to print
 	 */
 	public static void timestampedErrorPrint(String message) {
-		DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
-		Date now = new Date();
-		
-		System.err.println(timeFormat.format(now) + " - " + message);
+		System.err.println(LocalTime.now().format(dateTimeFormatter) + " - " + message);
 	}
 	
 	public static boolean INITIALIZED = false;

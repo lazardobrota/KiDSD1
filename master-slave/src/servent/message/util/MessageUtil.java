@@ -16,7 +16,6 @@ import servent.message.Message;
  * 
  * When reading, if we are FIFO, we send an ACK message on the same socket, so the other side
  * knows they can send the next message.
- * @author bmilojkovic
  *
  */
 public class MessageUtil {

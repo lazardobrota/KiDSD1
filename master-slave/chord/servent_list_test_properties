@@ -1,0 +1,8 @@
+servent_count=3
+chord_size=64
+bs.port=2000
+servent0.port=1100
+servent1.port=1200
+#use the next one to test collisions - it will clash with 1100
+#servent1.port=1164
+servent2.port=1300
