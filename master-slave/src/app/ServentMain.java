@@ -49,7 +49,7 @@ public class ServentMain {
 
 		PongListener pongListener = new PongListener();
 		Thread pongListenerThread = new Thread(pongListener);
-		pongListenerThread.start();
+//		pongListenerThread.start();
 
 		SimpleServentListener simpleListener = new SimpleServentListener(pongListener);
 		Thread listenerThread = new Thread(simpleListener);

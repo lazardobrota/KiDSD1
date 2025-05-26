@@ -7,9 +7,7 @@ import java.net.UnknownHostException;
 import java.util.*;
 
 import cli.ValueTypes;
-import servent.message.AskGetMessage;
-import servent.message.PutMessage;
-import servent.message.WelcomeMessage;
+import servent.message.*;
 import servent.message.util.MessageUtil;
 
 /**
@@ -365,4 +363,21 @@ public class ChordState {
 		return isInitialised;
 	}
 
+	public void getUploadListOfPaths(int senderPort, boolean thisNodeStartedCommand) {
+		//TODO Stavio bool na false i posle stavi na true kad zavrsis
+
+		for (Integer hash : uploadsThroughMe) {
+			if (isKeyMine(hash)) {
+				if (thisNodeStartedCommand)
+					AppConfig.timestampedStandardPrint("List: " + valueMap.get(hash));
+				else
+					MessageUtil.sendMessage(new FilesReceiveMessage(AppConfig.myServentInfo.getListenerPort(), senderPort, AppConfig.chordState.getValueMap().get(hash)));
+			}
+			else {
+				ServentInfo nextNode = getNextNodeForKey(hash);
+				FilesGetMessage message = new FilesGetMessage(senderPort, nextNode.getListenerPort(), String.valueOf(hash));
+				MessageUtil.sendMessage(message);
+			}
+		}
+	}
 }

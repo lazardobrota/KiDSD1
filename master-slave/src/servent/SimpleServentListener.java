@@ -87,6 +87,15 @@ public class SimpleServentListener implements Runnable, Cancellable {
                     case PONG:
                         messageHandler = new PongHandler(clientMessage, pongListener);
                         break;
+                    case LIST_FILES:
+                        messageHandler = new ListFilesHandler(clientMessage);
+                        break;
+                    case LIST_FILES_RECEIVE:
+                        messageHandler = new ListFilesReceiveHandler(clientMessage);
+                        break;
+                    case ASK_LIST_FILES:
+                        messageHandler = new AskListFilesHandler(clientMessage);
+                        break;
                     case POISON:
                         break;
                 }
