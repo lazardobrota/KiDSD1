@@ -25,8 +25,12 @@ public class ListFilesHandler implements MessageHandler{
 
         int hash = Integer.parseInt(clientMessage.getMessageText());
 
-        if (AppConfig.chordState.isKeyMine(hash))
-            MessageUtil.sendMessage(new FilesReceiveMessage(clientMessage.getReceiverPort(), clientMessage.getSenderPort(), AppConfig.chordState.getValueMap().get(hash)));
+        if (AppConfig.chordState.isKeyMine(hash)) {
+            if (AppConfig.chordState.getValueMap().containsKey(hash))
+                MessageUtil.sendMessage(new FilesReceiveMessage(clientMessage.getReceiverPort(), clientMessage.getSenderPort(), hash + ":" + AppConfig.chordState.getValueMap().get(hash)));
+            else
+                MessageUtil.sendMessage(new FilesReceiveMessage(clientMessage.getReceiverPort(), clientMessage.getSenderPort(), String.valueOf(hash)));
+        }
         else {
             ServentInfo nextNode = AppConfig.chordState.getNextNodeForKey(hash);
             FilesGetMessage message = new FilesGetMessage(clientMessage.getSenderPort(), nextNode.getListenerPort(), String.valueOf(hash));

@@ -43,13 +43,14 @@ public class CLIParser implements Runnable, Cancellable {
 		commandList.add(new DHTPutCommand());
 		commandList.add(new UploadFileCommand());
 		commandList.add(new ListFilesCommand());
+		commandList.add(new RemoveFileCommand());
 		commandList.add(new StopCommand(this, listener, pongListener));
 	}
 	
 	@Override
 	public void run() {
 		Scanner sc = new Scanner(System.in);
-		
+		//TODO For some reason MultiServentStarter doesnt see upload nad list_files command
 		while (working) {
 			String commandLine = sc.nextLine();
 			

@@ -88,7 +88,7 @@ public class MultipleServentStarter {
 		
 		for(int i = 0; i < serventCount; i++) {
 			try {
-				ProcessBuilder builder = new ProcessBuilder("java", "-cp", "out\\production\\KiDS-vezbe9", "app.ServentMain",
+				ProcessBuilder builder = new ProcessBuilder("java", "-cp", "out\\production\\master-slave", "app.ServentMain",
 						testName+"/servent_list.properties", String.valueOf(i));
 				
 				//We use files to read and write.

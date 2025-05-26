@@ -19,6 +19,11 @@ public class ListFilesReceiveHandler implements MessageHandler{
             return;
         }
 
-        AppConfig.timestampedStandardPrint("List: " + clientMessage.getMessageText());
+        String[] keyAndValue = clientMessage.getMessageText().split(":");
+
+        if (keyAndValue.length == 2)
+            AppConfig.timestampedStandardPrint("List: " + keyAndValue[1]);
+        else
+            AppConfig.chordState.getUploadsThroughMe().remove(Integer.parseInt(keyAndValue[0]));
     }
 }

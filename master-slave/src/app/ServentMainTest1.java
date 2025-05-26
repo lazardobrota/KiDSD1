@@ -26,7 +26,7 @@ public class ServentMainTest1 {
         int serventId = 1;
 		int portNumber = -1;
 		
-		String serventListFile = "chord/servent_list_test_properties";
+		String serventListFile = "chord/servent_list_test.properties";
 		
 		AppConfig.readConfig(serventListFile, serventId);
 		

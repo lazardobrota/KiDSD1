@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import cli.ValueTypes;
 import servent.message.*;
@@ -81,7 +82,7 @@ public class ChordState {
 		predecessorInfo = null;
 		valueMap = new HashMap<>();
 		allNodeInfo = new ArrayList<>();
-        uploadsThroughMe = new HashSet<>();
+        uploadsThroughMe = Collections.newSetFromMap(new ConcurrentHashMap<>());
 	}
 	
 	/**
@@ -366,18 +367,37 @@ public class ChordState {
 	public void getUploadListOfPaths(int senderPort, boolean thisNodeStartedCommand) {
 		//TODO Stavio bool na false i posle stavi na true kad zavrsis
 
-		for (Integer hash : uploadsThroughMe) {
-			if (isKeyMine(hash)) {
-				if (thisNodeStartedCommand)
-					AppConfig.timestampedStandardPrint("List: " + valueMap.get(hash));
-				else
-					MessageUtil.sendMessage(new FilesReceiveMessage(AppConfig.myServentInfo.getListenerPort(), senderPort, AppConfig.chordState.getValueMap().get(hash)));
+		synchronized (this) {
+			for (Integer hash : uploadsThroughMe) {
+				if (isKeyMine(hash)) {
+					String path = valueMap.getOrDefault(hash, "");
+					if (thisNodeStartedCommand) {
+						if (path.isEmpty())
+							uploadsThroughMe.remove(hash);
+						else
+							AppConfig.timestampedStandardPrint("List: " + valueMap.get(hash));
+					}
+					else
+						MessageUtil.sendMessage(new FilesReceiveMessage(AppConfig.myServentInfo.getListenerPort(), senderPort, hash + ":" + path));
+				}
+				else {
+					ServentInfo nextNode = getNextNodeForKey(hash);
+					FilesGetMessage message = new FilesGetMessage(senderPort, nextNode.getListenerPort(), String.valueOf(hash));
+					MessageUtil.sendMessage(message);
+				}
 			}
-			else {
-				ServentInfo nextNode = getNextNodeForKey(hash);
-				FilesGetMessage message = new FilesGetMessage(senderPort, nextNode.getListenerPort(), String.valueOf(hash));
-				MessageUtil.sendMessage(message);
-			}
+		}
+	}
+
+	public void removeValue(int key, String value) {
+		if (isKeyMine(key)) {
+			String removedPath = valueMap.remove(key);
+			AppConfig.timestampedStandardPrint(removedPath == null ? "File doesn't exist" : "Removing: " + value);
+		} else {
+			AppConfig.timestampedStandardPrint("Please wait...");
+			ServentInfo nextNode = getNextNodeForKey(key);
+			RemoveFileMessage pm = new RemoveFileMessage(AppConfig.myServentInfo.getListenerPort(), nextNode.getListenerPort(), key + ":" + value);
+			MessageUtil.sendMessage(pm);
 		}
 	}
 }
