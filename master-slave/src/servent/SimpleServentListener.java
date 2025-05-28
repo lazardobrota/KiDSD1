@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 
 import app.AppConfig;
 import app.Cancellable;
+import mutex.DistributedMutex;
 import servent.handler.*;
 import servent.message.Message;
 import servent.message.util.MessageUtil;
@@ -18,9 +19,11 @@ public class SimpleServentListener implements Runnable, Cancellable {
     private volatile boolean working = true;
 
     private PongListener pongListener;
+    private DistributedMutex mutex;
 
-    public SimpleServentListener(PongListener pongListener) {
+    public SimpleServentListener(PongListener pongListener, DistributedMutex mutex) {
         this.pongListener = pongListener;
+        this.mutex = mutex;
     }
 
     /*
@@ -61,7 +64,7 @@ public class SimpleServentListener implements Runnable, Cancellable {
                  */
                 switch (clientMessage.getMessageType()) {
                     case NEW_NODE:
-                        messageHandler = new NewNodeHandler(clientMessage);
+                        messageHandler = new NewNodeHandler(clientMessage, mutex);
                         break;
                     case WELCOME:
                         messageHandler = new WelcomeHandler(clientMessage);
@@ -70,7 +73,7 @@ public class SimpleServentListener implements Runnable, Cancellable {
                         messageHandler = new SorryHandler(clientMessage);
                         break;
                     case UPDATE:
-                        messageHandler = new UpdateHandler(clientMessage);
+                        messageHandler = new UpdateHandler(clientMessage, mutex);
                         break;
                     case PUT:
                         messageHandler = new PutHandler(clientMessage);
@@ -108,6 +111,8 @@ public class SimpleServentListener implements Runnable, Cancellable {
                     case FOLLOW_FOUND:
                         messageHandler = new FollowFoundHandler(clientMessage);
                         break;
+                    case TOKEN:
+                        messageHandler = new TokenHandler(clientMessage, mutex);
                     case POISON:
                         break;
                 }

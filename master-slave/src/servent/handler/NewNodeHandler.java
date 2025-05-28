@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import app.AppConfig;
 import app.ServentInfo;
+import mutex.DistributedMutex;
 import servent.message.Message;
 import servent.message.MessageType;
 import servent.message.NewNodeMessage;
@@ -16,14 +17,21 @@ import servent.message.util.MessageUtil;
 public class NewNodeHandler implements MessageHandler {
 
 	private Message clientMessage;
+	private DistributedMutex mutex;
 	
-	public NewNodeHandler(Message clientMessage) {
+	public NewNodeHandler(Message clientMessage, DistributedMutex mutex) {
 		this.clientMessage = clientMessage;
+		this.mutex = mutex;
 	}
 	
 	@Override
 	public void run() {
 		if (clientMessage.getMessageType() == MessageType.NEW_NODE) {
+
+			mutex.lock(this);
+
+			AppConfig.timestampedStandardPrint("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+
 			int newNodePort = clientMessage.getSenderPort();
 			ServentInfo newNodeInfo = new ServentInfo("localhost", newNodePort);
 			
@@ -93,6 +101,8 @@ public class NewNodeHandler implements MessageHandler {
 				NewNodeMessage nnm = new NewNodeMessage(newNodePort, nextNode.getListenerPort());
 				MessageUtil.sendMessage(nnm);
 			}
+
+			mutex.unlock(this);
 			
 		} else {
 			AppConfig.timestampedErrorPrint("NEW_NODE handler got something that is not new node message.");

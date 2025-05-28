@@ -1,5 +1,7 @@
 package app;
 
+import mutex.MutexType;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -20,6 +22,11 @@ public class AppConfig {
 	 * Convenience access for this servent's information
 	 */
 	public static ServentInfo myServentInfo;
+
+	/**
+	 * Type of mutex implementation in out system.
+	 */
+	public static MutexType MUTEX_TYPE = MutexType.TOKEN;
 
 
 	private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");

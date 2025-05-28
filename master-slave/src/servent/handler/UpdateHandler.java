@@ -5,6 +5,7 @@ import java.util.List;
 
 import app.AppConfig;
 import app.ServentInfo;
+import mutex.DistributedMutex;
 import servent.message.Message;
 import servent.message.MessageType;
 import servent.message.UpdateMessage;
@@ -13,14 +14,19 @@ import servent.message.util.MessageUtil;
 public class UpdateHandler implements MessageHandler {
 
 	private Message clientMessage;
+	private DistributedMutex mutex;
 	
-	public UpdateHandler(Message clientMessage) {
+	public UpdateHandler(Message clientMessage, DistributedMutex mutex) {
 		this.clientMessage = clientMessage;
+		this.mutex = mutex;
 	}
 	
 	@Override
 	public void run() {
 		if (clientMessage.getMessageType() == MessageType.UPDATE) {
+
+			mutex.lock(this);
+
 			if (clientMessage.getSenderPort() != AppConfig.myServentInfo.getListenerPort()) {
 				ServentInfo newNodInfo = new ServentInfo("localhost", clientMessage.getSenderPort());
 				List<ServentInfo> newNodes = new ArrayList<>();
@@ -46,6 +52,9 @@ public class UpdateHandler implements MessageHandler {
 				}
 				AppConfig.chordState.addNodes(allNodes);
 			}
+
+			mutex.unlock(this);
+
 		} else {
 			AppConfig.timestampedErrorPrint("Update message handler got message that is not UPDATE");
 		}

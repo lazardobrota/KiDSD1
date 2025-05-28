@@ -1,8 +1,12 @@
 package app;
 
 import cli.CLIParser;
+import mutex.DistributedMutex;
+import mutex.TokenMutex;
 import servent.PongListener;
 import servent.SimpleServentListener;
+
+import static mutex.MutexType.TOKEN;
 
 /**
  * Describes the procedure for starting a single Servent
@@ -39,6 +43,18 @@ public class ServentMainTest0 {
 			AppConfig.timestampedErrorPrint("Port number should be in range 1000-2000. Exiting...");
 			System.exit(0);
 		}
+
+		DistributedMutex mutex = null;
+
+		switch (AppConfig.MUTEX_TYPE) {
+			case TOKEN:
+				mutex = new TokenMutex();
+				break;
+			default:
+				mutex = null;
+				AppConfig.timestampedErrorPrint("Unknown mutex type in config.");
+				break;
+		}
 		
 		AppConfig.timestampedStandardPrint("Starting servent " + AppConfig.myServentInfo);
 
@@ -46,7 +62,7 @@ public class ServentMainTest0 {
 		Thread pongListenerThread = new Thread(pongListener);
 //		pongListenerThread.start();
 
-		SimpleServentListener simpleListener = new SimpleServentListener(pongListener);
+		SimpleServentListener simpleListener = new SimpleServentListener(pongListener, mutex);
 		Thread listenerThread = new Thread(simpleListener);
 		listenerThread.start();
 		
@@ -54,7 +70,7 @@ public class ServentMainTest0 {
 		Thread cliThread = new Thread(cliParser);
 		cliThread.start();
 		
-		ServentInitializer serventInitializer = new ServentInitializer();
+		ServentInitializer serventInitializer = new ServentInitializer(mutex);
 		Thread initializerThread = new Thread(serventInitializer);
 		initializerThread.start();
 		
