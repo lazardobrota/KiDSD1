@@ -30,8 +30,6 @@ public class NewNodeHandler implements MessageHandler {
 
 			mutex.lock(this);
 
-			AppConfig.timestampedStandardPrint("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-
 			int newNodePort = clientMessage.getSenderPort();
 			ServentInfo newNodeInfo = new ServentInfo("localhost", newNodePort);
 			

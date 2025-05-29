@@ -26,6 +26,7 @@ public class UploadFileCommand implements CLICommand{
                 throw new NumberFormatException();
             }
 
+            AppConfig.timestampedStandardPrint("Uploading image: " + path);
             AppConfig.chordState.getUploadsThroughMe().add(keyOfHashedPath);
             AppConfig.chordState.putValue(keyOfHashedPath, path);
         } catch (NumberFormatException e) {

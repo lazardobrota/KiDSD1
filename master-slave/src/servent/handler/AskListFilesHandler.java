@@ -23,7 +23,7 @@ public class AskListFilesHandler implements MessageHandler{
         int chordId = Integer.parseInt(clientMessage.getMessageText());
 
         if (AppConfig.myServentInfo.getChordId() == chordId)
-            AppConfig.chordState.getUploadListOfPaths(clientMessage.getSenderPort(), false);
+            AppConfig.chordState.getUploadListOfPaths(clientMessage.getSenderPort());
         else if (!AppConfig.chordState.isKeyMine(chordId)) {
             ServentInfo nextNode = AppConfig.chordState.getNextNodeForKey(chordId);
             MessageUtil.sendMessage(new AskListFilesMessage(clientMessage.getSenderPort(), nextNode.getListenerPort(), String.valueOf(chordId)));

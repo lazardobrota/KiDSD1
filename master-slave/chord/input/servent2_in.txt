@@ -1,3 +1,6 @@
 pause 30000
+upload_config
+upload pictures_upload/humble.png
+upload pictures_upload/squabble_up.png
 pause 10000
 stop

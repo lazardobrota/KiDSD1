@@ -376,16 +376,18 @@ public class ChordState {
         return isInitialised;
     }
 
-    public void getUploadListOfPaths(int senderPort, boolean thisNodeStartedCommand) {
+    public void getUploadListOfPaths(int senderPort) {
         //TODO Stavio bool na false i posle stavi na true kad zavrsis
 
         synchronized (this) {
             for (Integer hash : uploadsThroughMe) {
                 if (isKeyMine(hash)) {
                     String path = valueMap.getOrDefault(hash, "");
-                    if (thisNodeStartedCommand) {
-                        if (path.isEmpty())
+                    if (senderPort == AppConfig.myServentInfo.getListenerPort()) {
+                        if (path.isEmpty()) {
+                            AppConfig.timestampedStandardPrint("CCCCCCCCCCCCCCCCCCCCCCCC");
                             uploadsThroughMe.remove(hash);
+                        }
                         else
                             AppConfig.timestampedStandardPrint("List: " + valueMap.get(hash));
                     } else

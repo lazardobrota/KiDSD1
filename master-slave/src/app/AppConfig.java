@@ -9,8 +9,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * This class contains all the global application configuration stuff.
@@ -22,6 +21,7 @@ public class AppConfig {
 	 * Convenience access for this servent's information
 	 */
 	public static ServentInfo myServentInfo;
+	public static List<String> myServentStartUploadList;
 
 	/**
 	 * Type of mutex implementation in out system.
@@ -110,7 +110,8 @@ public class AppConfig {
 		}
 		
 		String portProperty = "servent"+serventId+".port";
-		
+
+
 		int serventPort = -1;
 		
 		try {
@@ -121,6 +122,17 @@ public class AppConfig {
 		}
 		
 		myServentInfo = new ServentInfo("localhost", serventPort);
+
+		String startUploadProperty = "servent"+serventId+".pic";
+		File startUploadFolder = new File(properties.getProperty(startUploadProperty));
+		myServentStartUploadList = new ArrayList<>();
+
+		if (startUploadFolder.listFiles() != null) {
+			for (final File fileEntry : Objects.requireNonNull(startUploadFolder.listFiles())) {
+				if (!fileEntry.isDirectory())
+					myServentStartUploadList.add(fileEntry.getPath());
+			}
+		}
 	}
 	
 }

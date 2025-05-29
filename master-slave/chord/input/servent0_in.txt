@@ -1,4 +1,5 @@
 pause 50000
-dht_put 2 5
+upload_config
+list_files 1300
 pause 10000
 stop

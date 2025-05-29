@@ -1,3 +1,4 @@
 pause 20000
+upload_config
 pause 10000
 stop

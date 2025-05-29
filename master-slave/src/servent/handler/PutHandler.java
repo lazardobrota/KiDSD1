@@ -1,8 +1,11 @@
 package servent.handler;
 
 import app.AppConfig;
+import app.ServentInfo;
 import servent.message.Message;
 import servent.message.MessageType;
+import servent.message.PutMessage;
+import servent.message.util.MessageUtil;
 
 public class PutHandler implements MessageHandler {
 
@@ -24,7 +27,14 @@ public class PutHandler implements MessageHandler {
 					key = Integer.parseInt(splitText[0]);
 					value = splitText[1];
 
-					AppConfig.chordState.putValue(key, value);
+					if (AppConfig.chordState.isKeyMine(key)) {
+						AppConfig.timestampedStandardPrint("Saved image: " + value);
+						AppConfig.chordState.getValueMap().put(key, value);
+					} else {
+						ServentInfo nextNode = AppConfig.chordState.getNextNodeForKey(key);
+						PutMessage pm = new PutMessage(clientMessage.getSenderPort(), nextNode.getListenerPort(), key, value);
+						MessageUtil.sendMessage(pm);
+					}
 				} catch (NumberFormatException e) {
 					AppConfig.timestampedErrorPrint("Got put message with bad text: " + clientMessage.getMessageText());
 				}

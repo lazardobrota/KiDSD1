@@ -24,7 +24,7 @@ public class ListFilesCommand implements CLICommand{
             int chordId = ChordState.chordHash(port);
 
             if (AppConfig.myServentInfo.getChordId() == chordId)
-                AppConfig.chordState.getUploadListOfPaths(AppConfig.myServentInfo.getListenerPort(), true);
+                AppConfig.chordState.getUploadListOfPaths(AppConfig.myServentInfo.getListenerPort());
             else if (!AppConfig.chordState.isKeyMine(chordId)) {
                 ServentInfo nextNode = AppConfig.chordState.getNextNodeForKey(chordId);
                 MessageUtil.sendMessage(new AskListFilesMessage(AppConfig.myServentInfo.getListenerPort(), nextNode.getListenerPort(), String.valueOf(chordId)));
