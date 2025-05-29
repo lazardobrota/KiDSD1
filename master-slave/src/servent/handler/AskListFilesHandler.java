@@ -22,14 +22,17 @@ public class AskListFilesHandler implements MessageHandler{
 
         int chordId = Integer.parseInt(clientMessage.getMessageText());
 
-        if (AppConfig.myServentInfo.getChordId() == chordId)
-            AppConfig.chordState.getUploadListOfPaths(clientMessage.getSenderPort());
+        if (AppConfig.myServentInfo.getChordId() == chordId) {
+            if (AppConfig.chordState.isNodePublic() || AppConfig.chordState.getAcceptedFollows().contains(clientMessage.getSenderPort()))
+                AppConfig.chordState.getUploadListOfPaths(clientMessage.getSenderPort());
+            else
+                MessageUtil.sendMessage(new AskListFilesErrorMessage(clientMessage.getReceiverPort(), clientMessage.getSenderPort(), "Called Node is private"));
+        }
         else if (!AppConfig.chordState.isKeyMine(chordId)) {
             ServentInfo nextNode = AppConfig.chordState.getNextNodeForKey(chordId);
             MessageUtil.sendMessage(new AskListFilesMessage(clientMessage.getSenderPort(), nextNode.getListenerPort(), String.valueOf(chordId)));
         }
-        else {
-            AppConfig.timestampedErrorPrint("ASK_LIST_FILES Invalid port");
-        }
+        else
+            MessageUtil.sendMessage(new AskListFilesErrorMessage(clientMessage.getReceiverPort(), clientMessage.getSenderPort(),"ASK_LIST_FILES Invalid port"));
     }
 }

@@ -1,11 +1,7 @@
-18:02:18.757 - Starting servent [0|localhost|1600]
-18:02:18.775 - Pausing for 10000 ms
-18:02:18.779 - Delay Message by: 877ms
-18:02:19.663 - Sending message [0|1600|0||NEW_NODE|1100|28]
-18:02:28.786 - Uploading image: pictures\servent4\not_like_us.png
-18:02:28.786 - Pausing for 4000 ms
-18:02:32.787 - Pausing for 6000 ms
-18:02:32.889 - Got message [4|1300|19||WELCOME|1600|0]
-18:02:32.891 - Delay Message by: 846ms
-18:02:33.740 - Sending message [0|1600|1||UPDATE|1300|4]
-18:02:38.797 - Stopping...
+19:13:41.080 - Starting servent [0|localhost|1600]
+19:13:41.099 - Pausing for 10000 ms
+19:13:41.105 - Delay Message by: 1085ms
+19:13:42.196 - Sending message [0|1600|0||NEW_NODE|1100|28]
+19:13:51.103 - Pausing for 4000 ms
+19:13:55.104 - Pausing for 6000 ms
+19:14:01.118 - Stopping...

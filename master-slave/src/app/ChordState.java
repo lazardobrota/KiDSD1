@@ -35,6 +35,7 @@ import servent.message.util.MessageUtil;
 public class ChordState {
 
     public static int CHORD_SIZE;
+    private boolean nodePublic;
 
     public static int chordHash(int value) {
         return 61 * value % CHORD_SIZE;
@@ -87,6 +88,7 @@ public class ChordState {
         uploadsThroughMe = Collections.newSetFromMap(new ConcurrentHashMap<>());
         pendingFollowRequests = Collections.newSetFromMap(new ConcurrentHashMap<>());
         acceptedFollows = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        nodePublic = true;
     }
 
     /**
@@ -155,6 +157,14 @@ public class ChordState {
 
     public Set<Integer> getAcceptedFollows() {
         return acceptedFollows;
+    }
+
+    public boolean isNodePublic() {
+        return nodePublic;
+    }
+
+    public void setNodePublic(boolean nodePublic) {
+        this.nodePublic = nodePublic;
     }
 
     public boolean isCollision(int chordId) {
