@@ -9,12 +9,20 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PongListener implements Runnable, Cancellable {
 
+    private static final Object lockKey = new Object();
     private volatile boolean working = true;
-    private volatile int clockwiseMachineAlive = 2;
-    private volatile int anticlockwiseMachineAlive = 2;
+    private final AtomicInteger clockwiseMachineAlive = new AtomicInteger(2);
+    private final AtomicInteger anticlockwiseMachineAlive = new AtomicInteger(2);
+    private final AtomicBoolean clockwiseUpdatedValue = new AtomicBoolean(false);
+    private final AtomicBoolean anticlockwiseUpdatedValue = new AtomicBoolean(false);
+//    private volatile int clockwiseMachineAlive = 2;
+//    private volatile int anticlockwiseMachineAlive = 2;
+
 
     public PongListener() {
     }
@@ -28,43 +36,99 @@ public class PongListener implements Runnable, Cancellable {
                 throw new RuntimeException(e);
             }
 
-            synchronized (this) {
-                int clockwise = clockwiseMachineAlive;
-                if (AppConfig.chordState.getSuccessorTable()[0] != null) {
-                    if (clockwise == 2) {
-                        AppConfig.timestampedStandardPrint("Sending Ping check clockwise: " + clockwiseMachineAlive);
-                        MessageUtil.sendMessage(new PingMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getNextNodePort()));
-                        clockwiseMachineAlive = 1;
-                    } else if (clockwise == 1) {
-                        AppConfig.timestampedStandardPrint("Sending worrying Ping check clockwise: " + clockwiseMachineAlive);
-                        AppConfig.timestampedStandardPrint(" ---------- SUCCESSOR:  " + AppConfig.chordState.getSuccessorTable()[1].getListenerPort());
-                        MessageUtil.sendMessage(new PingMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getSuccessorTable()[1].getListenerPort(), AppConfig.myServentInfo.getListenerPort() + ":" + AppConfig.chordState.getNextNodePort()));
-                        clockwiseMachineAlive = 0;
-                    } else if (clockwise == 0) {
-                        AppConfig.timestampedStandardPrint("Killing clockwise");
-                        sendKillMessage(AppConfig.chordState.getNextNodePort());
-                        clockwiseMachineAlive = -1;
-                    }
-                }
+            //There needs to be at least 3 nodes for PongListener to work
+            if (AppConfig.chordState.getSuccessorTable()[0] == null || AppConfig.chordState.getSuccessorTable()[1] == null)
+                continue;
 
-                int anticlockwise = anticlockwiseMachineAlive;
-                if (AppConfig.chordState.getPredecessor() != null) {
-                    if (anticlockwise == 2) {
-                        AppConfig.timestampedStandardPrint("Sending Ping check anticlockwise: " + anticlockwiseMachineAlive);
-                        AppConfig.timestampedStandardPrint(" ---------- PREDECESSOR:  " + AppConfig.chordState.getPredecessor().getListenerPort());
-                        MessageUtil.sendMessage(new PingMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getPredecessor().getListenerPort()));
-                        anticlockwiseMachineAlive = 1;
-                    } else if (anticlockwise == 1) {
-                        AppConfig.timestampedStandardPrint("Sending worrying Ping check anticlockwise: " + anticlockwiseMachineAlive);
-                        MessageUtil.sendMessage(new PingMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getSuccessorTable()[1].getListenerPort(), AppConfig.myServentInfo.getListenerPort() + ":" + AppConfig.chordState.getPredecessor().getListenerPort()));
-                        anticlockwiseMachineAlive = 0;
-                    } else if (anticlockwise == 0) {
-                        AppConfig.timestampedStandardPrint("Killing anticlockwise");
-                        sendKillMessage(AppConfig.chordState.getPredecessor().getListenerPort());
-                        anticlockwiseMachineAlive = -1;
-                    }
+
+            if (clockwiseUpdatedValue.get()) {
+                synchronized (lockKey) {
+                    clockwiseMachineAlive.set(2);
+                    clockwiseUpdatedValue.set(false);
                 }
             }
+
+            if (anticlockwiseUpdatedValue.get()) {
+                synchronized (lockKey) {
+                    anticlockwiseMachineAlive.set(2);
+                    anticlockwiseUpdatedValue.set(false);
+                }
+            }
+
+            switch (clockwiseMachineAlive.get()) {
+                case 2:
+                    AppConfig.timestampedStandardPrint("Ping clockwise");
+                    MessageUtil.sendMessage(new PingMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getNextNodePort()));
+                    break;
+                case 1:
+                    AppConfig.timestampedStandardPrint("Ping LOOOOONG clockwise");
+                    MessageUtil.sendMessage(new PingMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getSuccessorTable()[1].getListenerPort(), AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getNextNodePort()));
+                    break;
+                case 0:
+                    AppConfig.timestampedStandardPrint("Killing clockwise");
+                    sendKillMessage(AppConfig.chordState.getNextNodePort());
+                    break;
+            }
+
+            if (clockwiseMachineAlive.get() > - 1)
+                clockwiseMachineAlive.decrementAndGet();
+
+
+            switch (anticlockwiseMachineAlive.get()) {
+                case 2:
+                    AppConfig.timestampedStandardPrint("Ping ANTIclockwise");
+                    MessageUtil.sendMessage(new PingMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getPredecessor().getListenerPort()));
+                    break;
+                case 1:
+                    AppConfig.timestampedStandardPrint("Ping LOOOOONG ANTIclockwise");
+                    MessageUtil.sendMessage(new PingMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getSuccessorTable()[0].getListenerPort(), AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getPredecessor().getListenerPort()));
+                    break;
+                case 0:
+                    AppConfig.timestampedStandardPrint("Killing ANTIclockwise");
+                    sendKillMessage(AppConfig.chordState.getPredecessor().getListenerPort());
+                    break;
+            }
+
+            if (anticlockwiseMachineAlive.get() > - 1)
+                anticlockwiseMachineAlive.decrementAndGet();
+
+//            synchronized (this) {
+//                int clockwise = clockwiseMachineAlive;
+//                if (AppConfig.chordState.getSuccessorTable()[0] != null) {
+//                    if (clockwise == 2) {
+//                        AppConfig.timestampedStandardPrint("Sending Ping check clockwise: " + clockwiseMachineAlive);
+//                        MessageUtil.sendMessage(new PingMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getNextNodePort()));
+//                        clockwiseMachineAlive = 1;
+//                    } else if (clockwise == 1) {
+//                        AppConfig.timestampedStandardPrint("Sending worrying Ping check clockwise: " + clockwiseMachineAlive);
+//                        AppConfig.timestampedStandardPrint(" ---------- SUCCESSOR:  " + AppConfig.chordState.getSuccessorTable()[1].getListenerPort());
+//                        MessageUtil.sendMessage(new PingMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getSuccessorTable()[1].getListenerPort(), AppConfig.myServentInfo.getListenerPort() + ":" + AppConfig.chordState.getNextNodePort()));
+//                        clockwiseMachineAlive = 0;
+//                    } else if (clockwise == 0) {
+//                        AppConfig.timestampedStandardPrint("Killing clockwise");
+//                        sendKillMessage(AppConfig.chordState.getNextNodePort());
+//                        clockwiseMachineAlive = -1;
+//                    }
+//                }
+//
+//                int anticlockwise = anticlockwiseMachineAlive;
+//                if (AppConfig.chordState.getPredecessor() != null) {
+//                    if (anticlockwise == 2) {
+//                        AppConfig.timestampedStandardPrint("Sending Ping check anticlockwise: " + anticlockwiseMachineAlive);
+//                        AppConfig.timestampedStandardPrint(" ---------- PREDECESSOR:  " + AppConfig.chordState.getPredecessor().getListenerPort());
+//                        MessageUtil.sendMessage(new PingMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getPredecessor().getListenerPort()));
+//                        anticlockwiseMachineAlive = 1;
+//                    } else if (anticlockwise == 1) {
+//                        AppConfig.timestampedStandardPrint("Sending worrying Ping check anticlockwise: " + anticlockwiseMachineAlive);
+//                        MessageUtil.sendMessage(new PingMessage(AppConfig.myServentInfo.getListenerPort(), AppConfig.chordState.getSuccessorTable()[1].getListenerPort(), AppConfig.myServentInfo.getListenerPort() + ":" + AppConfig.chordState.getPredecessor().getListenerPort()));
+//                        anticlockwiseMachineAlive = 0;
+//                    } else if (anticlockwise == 0) {
+//                        AppConfig.timestampedStandardPrint("Killing anticlockwise");
+//                        sendKillMessage(AppConfig.chordState.getPredecessor().getListenerPort());
+//                        anticlockwiseMachineAlive = -1;
+//                    }
+//                }
+//            }
         }
     }
 
@@ -91,13 +155,27 @@ public class PongListener implements Runnable, Cancellable {
         working = false;
     }
 
-    public synchronized void setClockwiseMachineAliveValue(int value) {
-        clockwiseMachineAlive = value;
-        AppConfig.timestampedStandardPrint("AAAAAAAAAAAA CLOOOOCK: " + clockwiseMachineAlive);
+    public void pongClockWiseArrived() {
+        synchronized (lockKey) {
+            clockwiseUpdatedValue.set(true);
+            AppConfig.timestampedStandardPrint("CLOOOOCK PONG");
+        }
     }
 
-    public synchronized void setAnticlockwiseMachineAliveValue(int value) {
-        anticlockwiseMachineAlive = value;
-        AppConfig.timestampedStandardPrint("BBBBBBBBBBB ANTI_CLOOOOCK: " + anticlockwiseMachineAlive);
+    public void pongAntiClockWiseArrived() {
+        synchronized (lockKey) {
+            anticlockwiseUpdatedValue.set(true);
+            AppConfig.timestampedStandardPrint("ANTI_CLOOOOCK PONG");
+        }
     }
+
+//    public synchronized void setClockwiseMachineAliveValue(int value) {
+//        clockwiseMachineAlive = value;
+//        AppConfig.timestampedStandardPrint("AAAAAAAAAAAA CLOOOOCK: " + clockwiseMachineAlive);
+//    }
+//
+//    public synchronized void setAnticlockwiseMachineAliveValue(int value) {
+//        anticlockwiseMachineAlive = value;
+//        AppConfig.timestampedStandardPrint("BBBBBBBBBBB ANTI_CLOOOOCK: " + anticlockwiseMachineAlive);
+//    }
 }
