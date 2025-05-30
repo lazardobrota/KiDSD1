@@ -31,16 +31,5 @@ public class PingHandler implements MessageHandler {
             AppConfig.timestampedStandardPrint("Pass Ping to final node: " + fromToPorts[1]);
             MessageUtil.sendMessage(new PingMessage(clientMessage.getSenderPort(), fromToPorts[1], clientMessage.getMessageText()));
         }
-
-//        String[] fromToPorts = clientMessage.getMessageText().split(":");
-//
-//        if (AppConfig.myServentInfo.getListenerPort() == Integer.valueOf(fromToPorts[1])) {
-//            AppConfig.timestampedStandardPrint("Ping Valid: " + clientMessage);
-//            MessageUtil.sendMessage(new PongMessage(clientMessage.getReceiverPort(), clientMessage.getSenderPort(), AppConfig.myServentInfo.getListenerPort() + ":" + fromToPorts[0]));
-//        }
-//        else {
-//            AppConfig.timestampedStandardPrint("Pass Ping to final node: " + clientMessage);
-//            MessageUtil.sendMessage(new PingMessage(clientMessage.getReceiverPort(), Integer.valueOf(fromToPorts[1]), clientMessage.getMessageText()));
-//        }
     }
 }

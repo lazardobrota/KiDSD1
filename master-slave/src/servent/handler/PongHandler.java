@@ -47,25 +47,5 @@ public class PongHandler implements MessageHandler{
         }
 
         AppConfig.timestampedErrorPrint("PongHandler got some really weird message");
-
-//        boolean correctNode = false;
-//
-//        if (clientMessage.getSenderPort() == AppConfig.chordState.getNextNodePort()) {
-//            AppConfig.timestampedStandardPrint("Pong for Next node: " + clientMessage);
-//            pongListener.setClockwiseMachineAliveValue(2);
-//            correctNode = true;
-//        }
-//
-//        if (clientMessage.getSenderPort() == AppConfig.chordState.getPredecessor().getListenerPort()) {
-//            AppConfig.timestampedStandardPrint("Pong for Predecessor node: " + clientMessage);
-//            pongListener.setAnticlockwiseMachineAliveValue(2);
-//            correctNode = true;
-//        }
-//
-//        if (!correctNode) {
-//            AppConfig.timestampedStandardPrint("Pass Pong: " + clientMessage);
-//            String[] fromToPorts = clientMessage.getMessageText().split(":");
-//            MessageUtil.sendMessage(new PongMessage(clientMessage.getSenderPort(), Integer.valueOf(fromToPorts[0])));
-//        }
     }
 }
