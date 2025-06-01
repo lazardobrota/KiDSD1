@@ -61,6 +61,8 @@ public class ChordState {
 
     //	private Map<Integer, Integer> valueMap;
     private Map<Integer, String> valueMap;
+    private Map<Integer, String> clockwiseCopyValueMap;
+    private Map<Integer, String> anticlockwiseCopyValueMap;
 
     private final Set<Integer> uploadsThroughMe;
     private final Set<Integer> pendingFollowRequests;
@@ -157,6 +159,22 @@ public class ChordState {
 
     public Set<Integer> getAcceptedFollows() {
         return acceptedFollows;
+    }
+
+    public Map<Integer, String> getClockwiseCopyValueMap() {
+        return clockwiseCopyValueMap;
+    }
+
+    public void setClockwiseCopyValueMap(Map<Integer, String> clockwiseCopyValueMap) {
+        this.clockwiseCopyValueMap = clockwiseCopyValueMap;
+    }
+
+    public Map<Integer, String> getAnticlockwiseCopyValueMap() {
+        return anticlockwiseCopyValueMap;
+    }
+
+    public void setAnticlockwiseCopyValueMap(Map<Integer, String> anticlockwiseCopyValueMap) {
+        this.anticlockwiseCopyValueMap = anticlockwiseCopyValueMap;
     }
 
     public boolean isNodePublic() {
@@ -348,8 +366,13 @@ public class ChordState {
      * The Chord put operation. Stores locally if key is ours, otherwise sends it on.
      */
     public void putValue(int key, String value) {
-        if (isKeyMine(key)) {
+        if (isKeyMine(key)) { {
             valueMap.put(key, value);
+            if (successorTable.length > 2) {
+                MessageUtil.sendMessage(new CopyDataMessage(AppConfig.myServentInfo.getListenerPort(), getNextNodePort(), valueMap));
+                MessageUtil.sendMessage(new CopyDataMessage(AppConfig.myServentInfo.getListenerPort(), getPredecessor().getListenerPort(), valueMap));
+            }
+        }
         } else {
             ServentInfo nextNode = getNextNodeForKey(key);
             PutMessage pm = new PutMessage(AppConfig.myServentInfo.getListenerPort(), nextNode.getListenerPort(), key, value);

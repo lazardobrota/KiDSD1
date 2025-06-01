@@ -63,7 +63,6 @@ public class ServentMain {
 
 		PongListener pongListener = new PongListener();
 		Thread pongListenerThread = new Thread(pongListener);
-//		pongListenerThread.start();
 
 		SimpleServentListener simpleListener = new SimpleServentListener(pongListener, mutex);
 		Thread listenerThread = new Thread(simpleListener);
@@ -76,6 +75,12 @@ public class ServentMain {
 		ServentInitializer serventInitializer = new ServentInitializer(mutex);
 		Thread initializerThread = new Thread(serventInitializer);
 		initializerThread.start();
-		
+
+		try {
+			Thread.sleep(10_000);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+		pongListenerThread.start();
 	}
 }
